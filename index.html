@@ -1,416 +1,1063 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>출근 · Day1–5 상세 시퀀스</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>출근 · 설계 통합 시각화</title>
 <style>
+
 :root{
-  --bg:#E7ECF0;--surface:#FFFFFF;--surface-2:#F3F6F9;
-  --ink:#1B2431;--ink-soft:#5B6775;--ink-faint:#8A95A2;
-  --line:#D6DEE6;--line-soft:#E6ECF1;
-  --amber:#D9871F;--amber-soft:#FaF0DA;--amber-line:#EAD3A0;
-  --ceo:#E4633A;--ceo-bg:#FBE9E2; --hr:#3B7AB0;--hr-bg:#E4EFF7;
-  --sr:#6E5AA6;--sr-bg:#ECE7F5; --peer:#1F9E78;--peer-bg:#E0F2EB;
-  --emp:#5E7387;--emp-bg:#E9EDF1;
-  --shadow:0 1px 2px rgba(27,36,49,.05),0 8px 24px rgba(27,36,49,.06);
+  --paper:#ECEEE9; --panel:#FBFCFA; --panel-2:#F3F5F1;
+  --ink:#171A1D; --ink-2:#484E54; --ink-3:#7A8087; --line:#D6DAD3;
+  --amber:#A9720B; --amber-bg:#F4E6C4; --amber-line:#E4C983;
+  --plan:#3A48A6; --plan-bg:#E3E6F5;   /* 기획 */
+  --dev:#0C7A5F;  --dev-bg:#D9EBE3;     /* 개발 */
+  --art:#A63A61;  --art-bg:#F3DEE7;     /* 아트 */
+  --mgmt:#565C63; --mgmt-bg:#E6E8E5;    /* 경영 */
+  --force:#B4472E;                       /* 강제 스토리 */
+  --mono:ui-monospace,"SFMono-Regular","JetBrains Mono","Cascadia Code",Consolas,monospace;
+  --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;
-  line-height:1.55;letter-spacing:-.01em;background-image:radial-gradient(var(--line-soft) 1px,transparent 1px);background-size:22px 22px}
-.wrap{max-width:940px;margin:0 auto;padding:38px 18px 70px}
-.mono{font-family:"IBM Plex Mono",monospace}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.62;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-header.top{margin-bottom:22px}
-.stamp{display:inline-flex;align-items:center;gap:8px;font-family:"IBM Plex Mono",monospace;font-size:11px;
-  letter-spacing:.13em;color:var(--ink-soft);text-transform:uppercase;border:1px solid var(--line);background:var(--surface);padding:5px 11px;border-radius:2px}
-.stamp .dot{width:7px;height:7px;border-radius:50%;background:var(--amber)}
-h1{font-family:"Black Han Sans",sans-serif;font-weight:400;font-size:clamp(30px,6.5vw,54px);line-height:1;margin:14px 0 6px}
-h1 .wk{color:var(--amber)}
-.sub{color:var(--ink-soft);font-size:14px;max-width:66ch}.sub b{color:var(--ink);font-weight:600}
-.rule{height:3px;background:var(--ink);margin:16px 0 0;position:relative}
-.rule::after{content:"";position:absolute;right:0;top:0;height:3px;width:100px;background:var(--amber)}
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:40;background:rgba(236,238,233,.9);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1200px;margin:0 auto;padding:14px 22px;display:flex;
+  align-items:baseline;gap:16px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.brand small{font-weight:600;color:var(--ink-3);font-size:12px;margin-left:8px;
+  font-family:var(--mono);letter-spacing:0}
+.tabs{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.tab{appearance:none;border:1px solid var(--line);background:var(--panel);
+  color:var(--ink-2);font-family:var(--sans);font-size:13.5px;font-weight:700;
+  padding:7px 14px;border-radius:999px;cursor:pointer;transition:.16s}
+.tab:hover{border-color:var(--amber-line);color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
-.legend{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0 8px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:14px 16px}
-.card h3{margin:0 0 9px;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-.row{display:flex;flex-wrap:wrap;gap:6px}
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:500;padding:4px 9px;border-radius:100px;white-space:nowrap}
-.chip .sw{width:9px;height:9px;border-radius:50%}
-.c-ceo{background:var(--ceo-bg);color:#9b3d1c}.c-ceo .sw{background:var(--ceo)}
-.c-hr{background:var(--hr-bg);color:#245279}.c-hr .sw{background:var(--hr)}
-.c-sr{background:var(--sr-bg);color:#4c3d7a}.c-sr .sw{background:var(--sr)}
-.c-peer{background:var(--peer-bg);color:#12694f}.c-peer .sw{background:var(--peer)}
-.c-emp{background:var(--emp-bg);color:#4c5d6e}.c-emp .sw{background:var(--emp)}
-.klg{display:flex;flex-wrap:wrap;gap:6px}
-.ktag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;padding:3px 8px;border-radius:5px}
-.k-enter{background:var(--sr-bg);color:#4c3d7a}.k-branch{background:var(--amber);color:#fff}
-.k-story{background:var(--ink);color:#fff}.k-meeting{background:var(--ink);color:#fff}
-.k-explore{background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)}
-.k-mini{background:transparent;color:var(--ink-faint);border:1px dashed var(--ink-faint)}
-.k-lunch{background:var(--surface-2);color:var(--ink-faint);border:1px solid var(--line)}.k-end{background:var(--surface-2);color:var(--ink-faint);border:1px solid var(--line)}
-.klg .n{width:100%;font-size:11.5px;color:var(--ink-soft);margin-top:5px}.klg .n b{color:var(--ink)}
-.chg{border:1px solid var(--amber-line);background:var(--amber-soft);border-radius:7px;padding:9px 12px;font-size:12px;color:var(--ink-soft);margin-top:8px}.chg b{color:var(--ink)}
+.wrap{max-width:1200px;margin:0 auto;padding:26px 22px 90px}
+.pane{display:none;animation:fade .28s ease both}
+.pane.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-.day{margin:0 0 30px;scroll-margin-top:12px}
-.day-head{display:flex;align-items:flex-end;gap:12px;margin:22px 0 6px}
-.day-num{font-family:"Black Han Sans",sans-serif;font-size:clamp(34px,7.5vw,58px);line-height:.8}
-.day-num .p{color:var(--amber);font-size:.4em;vertical-align:top}
-.day-title h2{margin:0;font-size:clamp(18px,3vw,23px);font-weight:700}
-.day-title .dir{color:var(--ink-soft);font-size:13px;margin-top:1px}
-.day-theme{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:8px;padding:10px 14px;margin:8px 0 2px;font-size:12.5px;color:var(--ink-soft)}.day-theme b{color:var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--amber);font-weight:700}
+.lead{color:var(--ink-2);max-width:70ch;margin-top:8px}
 
-.phase{display:flex;align-items:center;gap:10px;margin:16px 0 10px}
-.phase .pl{font-family:"Black Han Sans",sans-serif;font-size:15px}
-.phase .turn{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint);border:1px solid var(--line);border-radius:100px;padding:2px 8px;background:var(--surface)}
-.phase .ln{flex:1;height:1px;background:var(--line)}
+/* ---------- persona ---------- */
+.p-head{display:flex;align-items:flex-end;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.p-head h2{font-size:26px}
+.plan-note{font-size:13px;color:var(--ink-2);background:var(--panel);
+  border:1px solid var(--line);border-radius:10px;padding:9px 13px;max-width:52ch}
+.p-grid{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}
+.roster{position:sticky;top:74px;display:flex;flex-direction:column;gap:14px}
+.rgroup .rg-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  color:var(--ink-3);font-weight:700;padding:0 4px 6px}
+.rlist{display:flex;flex-direction:column;gap:3px}
+.ritem{display:flex;align-items:center;gap:9px;text-align:left;width:100%;
+  border:1px solid transparent;background:transparent;cursor:pointer;
+  padding:7px 9px;border-radius:9px;font-family:var(--sans);font-size:13.5px;
+  color:var(--ink-2);transition:.14s}
+.ritem:hover{background:var(--panel)}
+.ritem[aria-current="true"]{background:var(--panel);border-color:var(--line);
+  color:var(--ink);font-weight:700;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.ritem .dot{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.ritem .rmbti{margin-left:auto;font-family:var(--mono);font-size:10.5px;
+  color:var(--ink-3);letter-spacing:.02em}
+.ritem:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
 
-.seq{position:relative;padding-left:26px}
-.seq::before{content:"";position:absolute;left:8px;top:4px;bottom:8px;width:2px;background:var(--line)}
-.step{position:relative;margin:0 0 11px}
-.step .dot{position:absolute;left:-26px;top:5px;width:16px;height:16px;border-radius:50%;background:var(--ink);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--line)}
-.step.d-amber .dot{background:var(--amber)}
-.step.d-free .dot{background:var(--surface);border:2px dashed var(--ink-faint);box-shadow:none;width:14px;height:14px;left:-25px}
-.step.d-lunch .dot{background:var(--ink-faint);width:10px;height:10px;left:-23px;top:8px;border-width:3px}
-.sbody{background:var(--surface);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);padding:11px 14px}
-.step.story .sbody{border-left:4px solid var(--ink)}
-.step.d-amber .sbody{border-left:4px solid var(--amber)}
-.step.d-free .sbody{background:var(--surface-2);border-style:dashed}
-.step.d-lunch .sbody{background:var(--surface-2);padding:8px 14px}
-.step.star .sbody{border-left:4px solid var(--amber);box-shadow:0 0 0 1px var(--amber-line),var(--shadow)}
-.s-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.snum{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;color:var(--ink-faint);background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
-.s-title{font-weight:600;font-size:14px}
-.freeflag{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-faint);border:1px dashed var(--ink-faint);border-radius:100px;padding:1px 7px}
-.starflag{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--amber);border:1px solid var(--amber-line);background:var(--amber-soft);border-radius:100px;padding:1px 7px}
-.s-desc{color:var(--ink-soft);font-size:12.5px;margin-top:6px;line-height:1.6}.s-desc .em{color:var(--ink);font-weight:500}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  overflow:hidden;box-shadow:0 1px 2px rgba(20,20,20,.04)}
+.sheet-top{padding:22px 26px 18px;position:relative;
+  border-bottom:1px solid var(--line)}
+.sheet-top .tag-part{display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;
+  padding:4px 10px;border-radius:999px}
+.sheet-top h3{font-size:24px;margin:12px 0 2px}
+.sheet-top .rank{color:var(--ink-2);font-size:13.5px}
+.oneline{margin-top:14px;font-size:16.5px;font-weight:700;line-height:1.45;
+  color:var(--ink);max-width:60ch}
+.oneline::before{content:"“";color:var(--amber);font-weight:800}
+.oneline::after{content:"”";color:var(--amber);font-weight:800}
+.badge-mini{display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+  font-size:12px;font-weight:700;color:var(--amber);background:var(--amber-bg);
+  border:1px solid var(--amber-line);padding:5px 11px;border-radius:999px}
 
-.voice{border-left:3px solid var(--ink);background:var(--surface-2);border-radius:0 6px 6px 0;padding:5px 11px;margin-top:7px;font-size:12px;color:var(--ink-soft);line-height:1.5}
-.voice b{font-weight:600;font-size:11px}.voice .q{color:var(--ink)}
+.sheet-body{padding:10px 26px 28px}
+.sec{padding:18px 0;border-bottom:1px dashed var(--line)}
+.sec:last-child{border-bottom:0}
+.sec>.eyebrow{display:block;margin-bottom:12px}
+.kv{display:grid;grid-template-columns:132px 1fr;gap:6px 16px}
+.kv dt{color:var(--ink-3);font-size:13px;font-weight:600}
+.kv dd{margin:0;color:var(--ink)}
+.kv dd b{font-weight:700}
+ul.tight{margin:0;padding-left:18px}
+ul.tight li{margin:4px 0}
+.rel{display:flex;flex-direction:column;gap:7px}
+.rel .r{display:grid;grid-template-columns:120px 1fr;gap:14px}
+.rel .r b{font-weight:700}
+.quotes{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.q{border-left:3px solid var(--line);padding:6px 0 6px 14px}
+.q .ql{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+  color:var(--ink-3);text-transform:uppercase}
+.q p{margin-top:3px;font-size:14.5px}
+.q.now{border-color:var(--mgmt)} .q.cf{border-color:var(--force)} .q.tr{border-color:var(--amber)}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.pager button{border:1px solid var(--line);background:var(--panel);cursor:pointer;
+  border-radius:10px;padding:9px 14px;font-family:var(--sans);font-weight:700;
+  font-size:13px;color:var(--ink-2);transition:.14s}
+.pager button:hover{border-color:var(--amber-line);color:var(--ink)}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
-.hublist{margin-top:8px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#fff}
-.hi{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 11px;border-bottom:1px dashed var(--line-soft);font-size:12px}
-.hi:last-child{border-bottom:none}
-.hi .ic{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:var(--ink-faint);border:1px solid var(--line);border-radius:100px;padding:1px 6px;min-width:38px;text-align:center}
-.hi .o{color:var(--ink)}.hi .rz{color:var(--ink-faint);font-size:11px;margin-left:auto}
-.hi.enter{background:var(--amber-soft)}.hi .en{font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--amber);border:1px solid var(--amber-line);border-radius:100px;padding:1px 6px}
-.hi .mn{font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--ink-faint);border:1px dashed var(--ink-faint);border-radius:100px;padding:1px 6px}
+/* frame / note cards */
+.frame{padding:24px 26px}
+.frame h3{font-size:22px;margin-bottom:6px}
+.frame .oneline{font-size:16px}
+.frame .fgrid{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frame .fcard{background:var(--panel-2);border:1px solid var(--line);
+  border-radius:12px;padding:14px 16px}
+.frame .fcard .eyebrow{display:block;margin-bottom:6px}
+@media(max-width:700px){.frame .fgrid{grid-template-columns:1fr}}
 
-.cond{display:inline-block;font-size:11px;color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber-line);border-radius:5px;padding:2px 8px;margin-top:8px}
+/* ---------- 30 days ---------- */
+.arc-band{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 26px}
+.arc{border:1px solid var(--line);background:var(--panel);border-radius:12px;
+  padding:13px 15px;position:relative;overflow:hidden}
+.arc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.arc.a1::before{background:var(--dev)} .arc.a2::before{background:var(--plan)}
+.arc.a3::before{background:var(--amber)} .arc.a4::before{background:var(--art)}
+.arc .ak{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3)}
+.arc h4{font-size:16px;margin:4px 0 5px}
+.arc p{font-size:12.5px;color:var(--ink-2)}
 
-.choices{margin-top:10px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.choice{display:grid;grid-template-columns:1.6fr .95fr 1.9fr;border-bottom:1px solid var(--line-soft);border-left:4px solid var(--line)}
-.choice:last-child{border-bottom:none}
-.choice > span{padding:9px 12px;font-size:12.5px;display:flex;flex-direction:column;justify-content:center;gap:5px;border-right:1px solid var(--line-soft)}
-.choice > span.mid{flex-direction:row;align-items:center;flex-wrap:wrap}
-.choice > span:last-child{border-right:none}
-.ch-label{font-weight:500;line-height:1.4}
-.ch-label .axis{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-faint);border:1px solid var(--line);border-radius:100px;padding:1px 6px;margin-left:4px;font-weight:400;white-space:nowrap}
-.dir{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px}
-.dir.up::after{content:"↑"}.dir.up2::after{content:"↑↑"}.dir.down::after{content:"↓"}.dir.flat::after{content:"→"}
-.ch-res{font-size:12px;color:var(--ink);line-height:1.45}
-.flag{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--hr);background:var(--hr-bg);border-radius:4px;padding:1px 5px}
-.trap{font-size:10px;color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber-line);border-radius:4px;padding:1px 5px;white-space:nowrap}
-.seed{font-size:10px;color:#12694f;background:var(--peer-bg);border-radius:4px;padding:1px 5px}
-.ccond{font-size:10px;color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber-line);border-radius:4px;padding:1px 5px}
-.follow{display:block;margin-top:4px;font-size:11px;color:var(--ink-faint);line-height:1.4}
-.follow::before{content:"↳ 이후 ";color:var(--amber);font-family:"IBM Plex Mono",monospace;font-size:10px}
-.none{color:var(--ink-faint);font-size:11px}
+.week{border:1px solid var(--line);border-radius:16px;background:var(--panel);
+  overflow:hidden;margin-bottom:16px;box-shadow:0 1px 2px rgba(20,20,20,.03)}
+.week-h{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px 18px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.wtag{font-family:var(--mono);font-weight:800;font-size:14px;
+  border:1px solid var(--line);border-radius:8px;padding:3px 9px;background:#fff}
+.wtitle{font-weight:800;font-size:15px}
+.wact{font-size:12px;color:var(--ink-2)}
+.wmeta{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 9px;
+  border-radius:999px;border:1px solid var(--line);color:var(--ink-2);background:#fff}
+.chip.jam{color:var(--art);border-color:var(--art)}
+.chip.settle{color:var(--amber);border-color:var(--amber-line);background:var(--amber-bg)}
+.chip.climax{color:var(--force);border-color:var(--force)}
 
-footer{margin-top:8px}
-.foot{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:15px 17px;box-shadow:var(--shadow)}
-.foot h4{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-.foot p{font-size:12.5px;color:var(--ink-soft);margin:5px 0}.foot b{color:var(--ink)}
-.credit{text-align:center;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-faint);margin-top:20px;line-height:1.7}
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.day{padding:13px 14px;border-right:1px solid var(--line);min-height:150px;
+  display:flex;flex-direction:column;gap:7px;transition:background .14s}
+.day:last-child{border-right:0}
+.day:hover{background:var(--panel-2)}
+.day .dn{display:flex;align-items:center;justify-content:space-between}
+.day .dn .num{font-family:var(--mono);font-weight:800;font-size:13px}
+.day .dn .dow{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.day h5{font-size:14px;font-weight:800;line-height:1.3}
+.day .desc{font-size:12px;color:var(--ink-2);line-height:1.45}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto}
+.t{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.02em;
+  padding:2px 7px;border-radius:6px;border:1px solid transparent}
+.t.force{color:var(--force);background:#f7e6e1;border-color:#e6b6a8}
+.t.grow{color:var(--dev);background:var(--dev-bg);border-color:#a9d3c6}
+.t.ev{color:var(--plan);background:var(--plan-bg);border-color:#b7bfe8}
+.t.set{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-line)}
+.t.cli{color:#fff;background:var(--force);border-color:var(--force)}
+@media(max-width:860px){.days{grid-template-columns:1fr}
+  .day{border-right:0;border-bottom:1px solid var(--line);min-height:0}}
 
-@media(max-width:760px){.legend{grid-template-columns:1fr}.choice{grid-template-columns:1fr}.choice>span{border-right:none;padding:7px 12px}.choice>span::before{content:attr(data-label);font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}}
-@media(prefers-reduced-motion:no-preference){.day{opacity:0;transform:translateY(8px);animation:rise .4s ease forwards}@keyframes rise{to{opacity:1;transform:none}}}
-</style>
-</head>
-<body>
-<div class="wrap">
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;margin:8px 0 26px;
+  padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);
+  font-size:12.5px;color:var(--ink-2)}
+.legend .li{display:flex;align-items:center;gap:7px}
+.legend .sw{width:14px;height:14px;border-radius:5px;border:1px solid rgba(0,0,0,.1)}
 
-<header class="top">
-  <span class="stamp"><span class="dot"></span>1주차 · Day1–5 상황별 시퀀스 (읽기용)</span>
-  <h1>출근 <span class="wk">· Day 1–5</span> 시퀀스</h1>
-  <p class="sub">하루를 <b>아침 진입 → 오전 → 점심 → 오후</b>로 나누고, <b>상황(시퀀스) 하나하나를 S01·S02…로 번호</b>를 붙여 체크할 수 있게 정리했다. Uid·ActionType 같은 기술 표기는 뺐다. 인물 화법은 캐논 파생, 미니게임은 지정하지 않고 슬롯(점선)으로만 표시.</p>
-  <div class="rule"></div>
-</header>
+.block{border:1px solid var(--line);border-radius:16px;background:var(--panel);
+  padding:20px 22px;margin-bottom:16px}
+.block>.eyebrow{display:block;margin-bottom:12px}
+.loop{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.node{font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 9px;
+  border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink-2)}
+.node.evt{background:#efeaf6;border-color:#cfc2e6;color:#5b4a86}
+.node.work{background:#e6eef7;border-color:#bcd0e8;color:#2f5b86}
+.node.res{background:#e6f1ea;border-color:#bcd9c8;color:#2c7350}
+.node.key{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber);font-weight:800}
+.arrow{color:var(--ink-3);font-family:var(--mono);font-size:11px}
+.rulebox{margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rulebox .rb{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.rulebox .rb .k{font-family:var(--mono);font-size:11px;color:var(--amber);font-weight:700}
+.rulebox .rb p{font-size:12.5px;color:var(--ink-2);margin-top:4px}
+@media(max-width:760px){.rulebox{grid-template-columns:1fr}}
 
-<section class="legend">
-  <div class="card"><h3>대상 NPC · 평판</h3>
-    <div class="row">
-      <span class="chip c-ceo"><span class="sw"></span>박정환 대표</span>
-      <span class="chip c-hr"><span class="sw"></span>경영지원팀장</span>
-      <span class="chip c-emp"><span class="sw"></span>경영지원팀원</span>
-      <span class="chip c-sr"><span class="sw"></span>김세호 선임</span>
-      <span class="chip c-peer"><span class="sw"></span>동기</span>
-    </div>
-    <div class="chg"><b>변경</b> — 소속 팀장은 2주차 출현. 1주차 역할은 대표·김세호·경영지원팀원·경영지원팀장으로 분산.</div>
+/* blame chain */
+.chain{display:flex;flex-direction:column;gap:10px}
+.chain .step{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
+.chain .step .ix{font-family:var(--mono);font-weight:800;color:var(--amber);
+  border:1px solid var(--amber-line);background:var(--amber-bg);border-radius:7px;
+  height:26px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.chain .step .bd{border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:var(--panel-2)}
+.chain .step .bd b{font-weight:800}
+.chain .step .bd .who{font-size:12px;color:var(--ink-3)}
+.converge{margin-top:12px;border:1.5px solid var(--force);border-radius:12px;
+  background:#f8e9e4;padding:12px 15px;display:flex;align-items:center;gap:12px}
+.converge .arrowdown{font-family:var(--mono);color:var(--force);font-weight:800}
+.converge b{color:var(--force)}
+
+.ends{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.end{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel)}
+.end .et{font-family:var(--mono);font-weight:800;font-size:14px;letter-spacing:.02em}
+.end.good .et{color:var(--dev)} .end.normal .et{color:var(--mgmt)} .end.bad .et{color:var(--force)}
+.end .cond{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin:8px 0}
+.end .res{font-size:13px;color:var(--ink)}
+.end::before{content:"";display:block;height:4px;width:38px;border-radius:2px;margin-bottom:10px}
+.end.good::before{background:var(--dev)} .end.normal::before{background:var(--mgmt)} .end.bad::before{background:var(--force)}
+@media(max-width:760px){.ends{grid-template-columns:1fr}.arc-band{grid-template-columns:1fr 1fr}}
+
+@media(max-width:820px){
+  .p-grid{grid-template-columns:1fr}
+  .roster{position:static;flex-direction:row;overflow-x:auto;gap:10px;padding-bottom:6px}
+  .rgroup{flex:0 0 auto;min-width:170px}
+}
+.foot{color:var(--ink-3);font-size:12px;font-family:var(--mono);margin-top:22px;text-align:center}
+
+
+:root{
+  --paper:#ECEEE9; --panel:#FBFCFA; --panel-2:#F3F5F1;
+  --ink:#171A1D; --ink-2:#484E54; --ink-3:#7A8087; --line:#D6DAD3;
+  --amber:#A9720B; --amber-bg:#F4E6C4; --amber-line:#E4C983;
+  --plan:#3A48A6; --plan-bg:#E3E6F5;
+  --dev:#0C7A5F;  --dev-bg:#D9EBE3;
+  --art:#A63A61;  --art-bg:#F3DEE7;
+  --mgmt:#565C63; --mgmt-bg:#E6E8E5;
+  --force:#B4472E;
+  --mono:ui-monospace,"SFMono-Regular","JetBrains Mono","Cascadia Code",Consolas,monospace;
+  --sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.64;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5{margin:0;font-weight:800;letter-spacing:-.01em;line-height:1.22}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.top{position:sticky;top:0;z-index:40;background:rgba(236,238,233,.92);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:13px 22px;display:flex;
+  align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:18px;letter-spacing:-.02em}
+.brand small{font-weight:600;color:var(--ink-3);font-size:12px;margin-left:8px;
+  font-family:var(--mono);letter-spacing:0}
+.seg{margin-left:auto;display:inline-flex;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:3px;gap:3px}
+.seg button{appearance:none;border:0;background:transparent;cursor:pointer;
+  font-family:var(--sans);font-size:13.5px;font-weight:800;color:var(--ink-2);
+  padding:7px 18px;border-radius:999px;transition:.16s}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.seg.plan-a button[aria-pressed="true"]{background:var(--plan)}
+.seg.plan-b button[aria-pressed="true"]{background:var(--art)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:26px 22px 90px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--amber);font-weight:700}
+
+.hero{border:1px solid var(--line);background:var(--panel);border-radius:16px;
+  padding:22px 24px;margin-bottom:18px}
+.hero .plan-name{font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.08em;
+  padding:4px 11px;border-radius:999px;display:inline-block;margin-bottom:12px}
+.plan-a .plan-name{color:var(--plan);background:var(--plan-bg);border:1px solid #b7bfe8}
+.plan-b .plan-name{color:var(--art);background:var(--art-bg);border:1px solid #e0b6c8}
+.hero h1{font-size:23px;margin-bottom:10px}
+.logline{color:var(--ink);font-size:15.5px;max-width:74ch;border-left:3px solid var(--amber);
+  padding-left:14px}
+.logline b{font-weight:800}
+
+.arc-band{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:16px 0}
+.arc{border:1px solid var(--line);background:var(--panel);border-radius:11px;
+  padding:11px 13px;position:relative;overflow:hidden}
+.arc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.arc.a1::before{background:var(--dev)} .arc.a2::before{background:var(--plan)}
+.arc.a3::before{background:var(--amber)} .arc.a4::before{background:var(--art)}
+.arc .ak{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--ink-3)}
+.arc h4{font-size:14px;margin:3px 0 4px}
+.arc p{font-size:11.5px;color:var(--ink-2)}
+@media(max-width:720px){.arc-band{grid-template-columns:1fr 1fr}}
+
+.cast{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 22px}
+.cc{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);
+  background:var(--panel);border-radius:10px;padding:6px 11px;font-size:12.5px}
+.cc .dot{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.cc b{font-weight:800}
+.cc span{color:var(--ink-2)}
+
+.section-label{display:flex;align-items:baseline;gap:12px;margin:26px 0 14px}
+.section-label h2{font-size:19px}
+
+.syn{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.syn p{color:var(--ink);max-width:78ch}
+.syn p b{font-weight:700}
+
+/* timeline */
+.tl{position:relative;margin-top:6px;padding-left:26px}
+.tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.beat{position:relative;margin-bottom:16px}
+.beat::before{content:"";position:absolute;left:-25px;top:6px;width:12px;height:12px;
+  border-radius:50%;background:var(--panel);border:2.5px solid var(--mgmt)}
+.beat.p-기획::before{border-color:var(--plan)} .beat.p-개발::before{border-color:var(--dev)}
+.beat.p-아트::before{border-color:var(--art)} .beat.p-경영::before{border-color:var(--mgmt)}
+.beat-card{border:1px solid var(--line);background:var(--panel);border-radius:13px;
+  padding:14px 17px;box-shadow:0 1px 2px rgba(20,20,20,.03)}
+.beat-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.daytag{font-family:var(--mono);font-size:11.5px;font-weight:800;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:var(--panel-2)}
+.evtag{font-family:var(--mono);font-size:11px;font-weight:800;color:var(--amber);
+  background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:999px;
+  width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+.beat-head h3{font-size:15.5px}
+.fixed{font-size:13px;color:var(--ink-3);border-left:2px solid var(--line);
+  padding-left:11px;margin-bottom:10px}
+.fixed .fl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);display:block;margin-bottom:2px}
+.narr{font-size:14.5px;color:var(--ink);line-height:1.6}
+.narr .nl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  font-weight:800;display:block;margin-bottom:3px}
+.plan-a .narr .nl{color:var(--plan)} .plan-b .narr .nl{color:var(--art)}
+
+.ends{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:6px}
+.end{border:1px solid var(--line);border-radius:13px;padding:15px 17px;background:var(--panel)}
+.end::before{content:"";display:block;height:4px;width:36px;border-radius:2px;margin-bottom:9px}
+.end.good::before{background:var(--dev)} .end.normal::before{background:var(--mgmt)} .end.bad::before{background:var(--force)}
+.end .et{font-family:var(--mono);font-weight:800;font-size:13.5px}
+.end.good .et{color:var(--dev)} .end.normal .et{color:var(--mgmt)} .end.bad .et{color:var(--force)}
+.end .cond{font-family:var(--mono);font-size:11px;color:var(--ink-2);margin:7px 0}
+.end .res{font-size:12.5px}
+@media(max-width:720px){.ends{grid-template-columns:1fr}}
+
+.note{margin-top:14px;font-size:13px;color:var(--ink-2);background:var(--panel-2);
+  border:1px solid var(--line);border-radius:11px;padding:12px 15px}
+.note b{font-weight:800;color:var(--ink)}
+.foot{color:var(--ink-3);font-size:12px;font-family:var(--mono);margin-top:26px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.fade{animation:fade .26s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+
+/* ===== merge overrides ===== */
+.wrap,.top-in{max-width:1180px}
+.tabs{margin-left:8px}
+.seg{margin-left:auto}
+.p-head h2{font-size:24px}
+
+</style></head><body>
+<header class="top"><div class="top-in">
+  <div class="brand">출근 <small>설계 통합 · v2</small></div>
+  <div class="tabs" role="tablist" aria-label="보기 전환">
+    <button class="tab" role="tab" id="t-persona" aria-selected="true">페르소나</button>
+    <button class="tab" role="tab" id="t-story" aria-selected="false">스토리라인</button>
+    <button class="tab" role="tab" id="t-flow" aria-selected="false">30일 흐름도</button>
   </div>
-  <div class="card"><h3>상황 유형</h3>
-    <div class="klg">
-      <span class="ktag k-enter">진입·컷신</span><span class="ktag k-branch">분기·선택지</span>
-      <span class="ktag k-story">스토리</span><span class="ktag k-meeting">회의</span>
-      <span class="ktag k-explore">자유 탐색(HUB)</span><span class="ktag k-mini">미니게임</span><span class="ktag k-lunch">점심</span>
-      <span class="n"><b style="color:var(--ink)">진한 노드</b>=설계 대상 · <b style="color:var(--ink-faint)">점선 노드</b>=자유·별도 시스템. <b>HUB</b>는 상호작용 시 해당 시퀀스를 부르고 <b>끝나면 복귀</b>, <b>진입</b> 항목은 다음 상황으로 넘어감.</span>
-    </div>
+  <div class="seg plan-a" id="planseg" role="group" aria-label="A/B 안 선택">
+    <button id="p-a" aria-pressed="true">A안</button>
+    <button id="p-b" aria-pressed="false">B안</button>
   </div>
-</section>
+</div></header>
 
-<div id="days"></div>
+<main class="wrap plan-a" id="root">
 
+  <section class="pane on" id="pane-persona" role="tabpanel">
+    <div class="p-head">
+      <div><span class="eyebrow" id="persona-eyebrow">Persona · Plan A</span>
+        <h2 id="persona-title">페르소나 A안</h2></div>
+      <div class="plan-note" id="persona-note"></div>
+    </div>
+    <div class="p-grid"><nav class="roster" id="roster" aria-label="인물 목록"></nav><div id="sheet"></div></div>
+  </section>
 
-</div>
+  <section class="pane" id="pane-story" role="tabpanel">
+    <div class="hero">
+      <span class="plan-name" id="story-planname">STORYLINE · PLAN A</span>
+      <h1 id="story-plantitle"></h1>
+      <p class="logline" id="story-logline"></p>
+    </div>
+    <div class="arc-band" id="story-arcband"></div>
+    <div class="section-label"><span class="eyebrow">Cast</span><h2>이 안의 인물 구성</h2></div>
+    <div class="cast" id="story-cast"></div>
+    <div class="section-label"><span class="eyebrow">Synopsis</span><h2>한 페이지 시놉시스</h2></div>
+    <div class="syn" id="story-syn"></div>
+    <div class="section-label"><span class="eyebrow">Beats · 프롤로그 → Day 30</span><h2>사건 타임라인</h2></div>
+    <p style="color:var(--ink-2);font-size:13px;margin:-6px 0 12px">회색 <span class="mono">FIXED</span>는 두 안이 공유하는 뼈대, 아래 문단은 <b id="story-planlabel">A안</b> 페르소나가 그 사건을 끌고 가는 방식입니다.</p>
+    <div class="tl" id="story-timeline"></div>
+    <div class="section-label"><span class="eyebrow">Endings · Day 30</span><h2>정규 3종 엔딩</h2></div>
+    <div class="ends" id="story-ends"></div>
+    <div class="note" id="story-endnote"></div>
+  </section>
 
+  <section class="pane" id="pane-flow" role="tabpanel">
+    <span class="eyebrow">30-day loop · 6 weeks</span>
+    <h2 style="font-size:26px;margin-top:6px">30일 전체 흐름도</h2>
+    <p class="lead">프롤로그(Day0) 이후 6주·30근무일. 주당 게임잼 프로젝트 1개, 금요일 <b>마감회의 = 포스트모템</b>에서 기여도 정산. 강제 스토리는 날짜 고정 필수사건에만, 나머지는 육성·상호작용. 상태머신 전체 흐름의 월/금/저장 규칙을 반영했습니다.</p>
+    <div class="arc-band" id="flow-arcband"></div>
+    <div class="legend" id="flow-legend"></div>
+    <div id="flow-weeks"></div>
+    <div class="block"><span class="eyebrow">하루 루프 · 상태머신 참조</span>
+      <div class="loop" id="flow-loop"></div>
+      <div class="rulebox">
+        <div class="rb"><span class="k">월요일</span><p>EvtBeforeMorning에서 신규 잼 프로젝트 요구량·NPC 예정 처리량 설정, 진척·초과·이해도 초기화.</p></div>
+        <div class="rb"><span class="k">금요일</span><p>AfternoonResult에서 프로젝트 결과·품질 후보·분야별 경험치 정산 후 플레이어 스탯(기획·개발·아트) 상승.</p></div>
+        <div class="rb"><span class="k">저장</span><p>HomeAndDiary 완료 후 저장. 업무 중 종료 시 DayStart부터 재시작, 당일 난수 재생성.</p></div>
+      </div>
+    </div>
+    <div class="block"><span class="eyebrow">책임 사슬 · 잡부에게 수렴</span>
+      <p style="color:var(--ink-2);font-size:13px;margin-bottom:14px">일을 잘할수록(=세 파트를 다 만질수록) 모든 실패가 한 사람에게 모인다. 각 단계는 필수사건과 맞물린다.</p>
+      <div class="chain" id="flow-chain"></div>
+      <div class="converge"><span class="arrowdown">└─▶</span>
+        <div><b>주인공(잡부)</b> — 기획·개발·아트 커밋·문서·리소스에 전부 이름이 남아, 포스트모템의 단일 책임자로 수렴. <span style="color:var(--ink-3)">전임자 = 전(前) 잡부.</span></div>
+      </div>
+    </div>
+    <div class="block"><span class="eyebrow">정규 엔딩 · Day 30 판정</span>
+      <p style="color:var(--ink-2);font-size:13px;margin-bottom:14px">회사 평가는 Day30 최종 면담에서 처음 공개. 판정은 이 한 번뿐, 우선순위 <b>Good → Bad → Normal</b>. (경쟁사·연대·후계는 특별분기로 보류)</p>
+      <div class="ends" id="flow-ends"></div>
+    </div>
+    <p class="foot">출근 · 설계 통합 시각화 v2 · 페르소나(A/B) · 스토리라인(A/B) · 30일 흐름도</p>
+  </section>
+
+</main>
 <script>
-const NM={ceo:"대표",hr:"경영지원팀장",emp:"경영지원팀원",sr:"김세호",peer:"동기"};
-const chip=(c,d)=>`<span class="chip c-${c}"><span class="sw"></span>${NM[c]}<span class="dir ${d}"></span></span>`;
-
-const DAYS=[
-{n:"01",dow:"MON",title:"공식 첫 출근",dir:"오인 채용을 실제 회사생활로 전환하고 인물을 소개한다.",
- theme:"핵심 — <b>보상 = 추가 업무</b>. 잘 해내면 칭찬과 함께 다음 일이 얹힌다. 첫날이라 자기소개·인물 소개가 함께.",
- phases:[
-  {name:"아침 진입",turn:"",steps:[
-   {kind:"enter",title:"출근 아침",desc:"집(어두운 방)에서 출근길로. 첫 출근 긴장. 프롤로그에선 걸어갔다 고생했으니 오늘은 대중교통.",voices:[{c:"","line":""}]},
-   {kind:"enter",title:"첫 출근 · 자리 안내 · 동기 자기소개",desc:"<span class='em'>경영지원팀장</span>이 출근을 확인하고 자리를 안내한다. 자기 자리엔 전임자의 흔적(머그컵·오래된 포스트잇). 옆자리 <span class='em'>동기</span>가 먼저 자기소개를 건넨다.",
-    voices:[{c:"hr",line:"출근 확인·자리 안내 (절차적)"},{c:"peer",line:"동시 입사자, 자기소개 먼저 건넴 (경쟁적 예의)"}],
-    choices:[
-     {label:"담백하게 소개",axis:"기준",npc:[["peer","up","동기"]],res:"기준 명확을 선호하는 동기에게 호감"},
-     {label:"친근하게 소개",axis:"",npc:[["peer","flat","동기"]],res:"무난"},
-     {label:"사무적으로",axis:"",npc:[["peer","down","동기"]],res:"거리감"}]},
-  ]},
-  {name:"오전",turn:"주간회의 2턴 포함",steps:[
-   {kind:"meeting",title:"주간회의 — 최초 업무 지시",desc:"월요일 첫 시퀀스(고정). <span class='em'>대표</span>가 낙관적으로 열고 <span class='em'>김세호</span>가 냉소적으로 번역한다. 대표가 최초 업무를 지시(호명→칭찬→의미→부탁→신뢰).",
-    voices:[{c:"ceo",line:"천천히 빨리 적응해 주세요."},{c:"sr",line:"‘천천히 빨리’ = 오늘 안에 익히라는 뜻이야."}],
-    choices:[
-     {label:"제가 지금 처리하겠습니다",axis:"속도",npc:[["ceo","up","대표"]],res:"즉시성 인정"},
-     {label:"기준부터 확인하겠습니다",axis:"절차",npc:[["hr","up","경영"]],res:"절차 신뢰"},
-     {label:"무엇부터 도우면 될지 여쭤본다",axis:"조율",npc:[["peer","up","동기"]],res:"역할 조율"}]},
-   {kind:"mini",title:"최초 업무 이행 → 회의 종료",desc:"지시한 업무를 처리(미니게임 슬롯, 평판 ±). 결과에 따라 대표/경영지원팀장이 코멘트하고 회의가 닫힌다. <span class='em'>‘잘하면 즉시 다음 일’ / ‘실수하면 절차 재작업’</span>의 첫 체감."},
-   {kind:"explore",title:"오전 사무실 — 자유 탐색",desc:"사무실을 돌아다니며 사물·NPC와 상호작용. 자기 자리에 상호작용하면 다음 상황(업무 설명)으로 진입.",
-    interacts:[
-     {ic:"사물",o:"전임자 자리(머그컵·포스트잇)",rz:"짧은 독백·소량 플래그"},
-     {ic:"NPC",o:"경영지원팀장 / 김세호 / 동기 대화",rz:"관계 형성"},
-     {ic:"업무",o:"미니게임 슬롯",mini:true},
-     {ic:"진입",o:"자기 자리 상호작용",enter:true,rz:"→ 업무 설명"}]},
-   {kind:"story",title:"업무 설명 (동기와 함께)",desc:"동기와 함께 <span class='em'>김세호</span>·<span class='em'>경영지원팀장</span>에게 업무 설명을 듣는다. 설명이 끝나면 미니게임을 강제로 진행(평판 ±)."},
-  ]},
-  {name:"점심",turn:"",steps:[
-   {kind:"lunch",title:"점심시간",desc:"동기가 오전 소회를 넌지시 꺼낸다(경쟁 심리)."},
-  ]},
-  {name:"오후",turn:"자유 플레이",steps:[
-   {kind:"explore",title:"오후 사무실 — 자유 탐색",desc:"돌아다니면 NPC의 미니게임 요청이 무작위로 생성(진행 시 해당 NPC 평판 ±). 자기 자리 상호작용 시 PC 화면이 뜨고 PC 미니게임(별도)도 가능.",
-    interacts:[
-     {ic:"업무",o:"무작위 NPC 미니게임 요청",mini:true,rz:"해당 NPC 평판 ±"},
-     {ic:"진입",o:"자기 자리 → PC 미니게임(별도)",enter:true,rz:"도움 준 NPC 평판 ±"}]},
-   {kind:"end",title:"퇴근 · Day1 종료",desc:"밤거리 → 귀가. 하루 정산."},
-  ]},
- ]},
-
-{n:"02",dow:"TUE",title:"전임자의 최종본",dir:"인수인계 부재를 일상적 무질서로. (사용자 예시 반영)",
- theme:"핵심 — 전임자는 ‘비밀의 열쇠’가 아니라 <b>떠넘기고 사라진 빈자리</b>. 정리하다 인수인계 문서를 발견하고, 그것을 동기와 나눌지가 첫 연대 갈림.",
- phases:[
-  {name:"아침 진입",turn:"",steps:[
-   {kind:"enter",title:"빈 사무실 선(先)출근",desc:"아무도 없는 사무실에 먼저 출근해 이것저것 상호작용. 모든 상호작용을 마치거나 일정 시간이 지나면 다음 상황으로.",
-    interacts:[{ic:"사물",o:"빈 사무실 사물들",rz:"관찰·소소한 발견"},{ic:"진입",o:"완료/시간경과",enter:true,rz:"→ 동료 출근"}]},
-   {kind:"enter",title:"동료들 출근 · 간단 대화",desc:"경영지원팀장·김세호·동기가 하나둘 출근하며 짧게 인사한 뒤 오전이 시작된다."},
-  ]},
-  {name:"오전",turn:"",steps:[
-   {kind:"explore",title:"오전 사무실 — 자유 탐색",desc:"돌아다니며 미니게임/대화를 해도 되고, 자기 자리 상호작용 시 PC 화면이 뜨며 전임자 폴더 상황으로 진입.",
-    interacts:[{ic:"업무",o:"미니게임 슬롯",mini:true},{ic:"NPC",o:"NPC 대화",rz:"관계"},{ic:"진입",o:"자기 자리 → PC",enter:true,rz:"→ 전임자 폴더"}]},
-   {kind:"branch",title:"전임자 폴더 (스토리 분기)",desc:"PC에 <span class='em'>‘최종·찐최종·진짜최종·최종수정’</span>이 기준 없이 늘어져 있다. 어떻게 할지 결정.",
-    choices:[
-     {label:"버전별로 정리한다",axis:"",npc:[],res:"<span class='flag'>FLAG_D2_정리</span> · 정리 중 <span class='em'>인수인계 문서</span> 발견",follow:"오후 동기 이벤트에서 ‘공유’ 선택지 개방."},
-     {label:"가만히 놔둔다",axis:"",npc:[],res:"<span class='flag'>FLAG_D2_방치</span>",follow:"오후엔 자동으로 ‘못봤다’ 처리."}]},
-   {kind:"mini",title:"오전 마무리",desc:"업무 미니게임 슬롯으로 오전을 닫는다."},
-  ]},
-  {name:"점심",turn:"",steps:[{kind:"lunch",title:"점심시간",desc:"[보완] 구조 통일용 생활 씬."}]},
-  {name:"오후",turn:"",steps:[
-   {kind:"explore",title:"오후 사무실 — 자유 탐색",desc:"돌아다니거나 미니게임. 동기가 다가오는 이벤트가 발생하면 다음 상황으로.",
-    interacts:[{ic:"NPC",o:"NPC 대화",rz:"관계"},{ic:"업무",o:"미니게임 슬롯",mini:true},{ic:"진입",o:"동기 접근",enter:true,rz:"→ 인수인계 문서"}]},
-   {kind:"branch",title:"인수인계 문서 (평판 분기)",desc:"<span class='em'>동기</span>가 “인수인계 파일 같은 거 본 적 있어?”라고 묻는다.",cond:"‘정리’ 선택 시 선택 개방 · ‘놔둠’이면 자동으로 ‘못봤다’",
-    choices:[
-     {label:"공유한다",axis:"",npc:[["peer","up2","동기"]],res:"<span class='flag'>FLAG_D2_인수인계공유</span> <span class='seed'>연대 씨앗</span>",follow:"동기 신뢰 급상승 → 후반 공동대응 준비."},
-     {label:"“못봤다”",axis:"",npc:[["peer","flat","동기"]],res:"동기 평판 그대로"}]},
-   {kind:"end",title:"오후 마무리 · 퇴근",desc:"미니게임 슬롯 후 하루 정산."},
-  ]},
- ]},
-
-{n:"03",dow:"WED",title:"빠른 사람을 찾습니다",dir:"속도·즉시성 문화. 인정 = 업무 증가.",
- theme:"핵심 — 인정받는 것과 업무가 늘어나는 것은 같은 사건. <b>소속 팀장의 잡무 역할은 김세호(실무 이관)·경영지원팀원(회계)</b>가 대신한다.",
- phases:[
-  {name:"아침 진입",turn:"",steps:[
-   {kind:"enter",title:"쌓여 있는 급한 일들",desc:"자리에 앉기도 전에 일이 한꺼번에 들어와 있다. <span class='em'>대표</span>가 즉흥적으로 한 건 더 얹고, <span class='em'>김세호</span>가 실무를 넘기며 냉소한다. <span class='em'>동기</span>는 이미 자기 몫을 순서대로 정리 중.",
-    voices:[
-     {c:"ceo",line:"{PlayerName}씨 감이 좋아. 빠르게 한번 보여줘요."},
-     {c:"sr",line:"이거 원래 내가 하던 건데, 이제 네 자리 일이야."},
-     {c:"peer",line:"난 순서대로 할 거야. 담당 겹치면 미리 말해줘."}]},
-  ]},
-  {name:"오전",turn:"",steps:[
-   {kind:"explore",title:"오전 사무실 — 자유 탐색",desc:"경영지원팀원의 회계 잡무는 상호작용 후 복귀형(돕는다). 자기 자리 상호작용 시 처리 기준 상황으로 진입.",
-    interacts:[
-     {ic:"업무",o:"미니게임 슬롯",mini:true},
-     {ic:"NPC",o:"경영지원팀원 회계 잡무",rz:"경영지원팀원 ↑ (‘영수증 없으면 개인 비용입니다’)"},
-     {ic:"진입",o:"자기 자리 → PC",enter:true,rz:"→ 처리 기준"}]},
-   {kind:"branch",title:"무엇부터 처리할까 (스토리 분기)",desc:"요청(메일·메신저)이 뒤섞여 마감·중요도가 제각각. 처리 기준을 먼저 정한다.",
-    choices:[
-     {label:"빨리 쳐낸다",axis:"속도",npc:[["ceo","up","대표"]],res:"<span class='flag'>FLAG_D3_우선순위=속도</span>",follow:"‘빠른 사람’으로 분류 → 오후에 더 얹힘."},
-     {label:"순서대로 꼼꼼히",axis:"정확",npc:[["hr","up","경영"]],res:"<span class='flag'>우선순위=정확</span>",follow:"대표는 답답, 경영지원팀장은 신뢰."},
-     {label:"담당·기준부터 나눈다",axis:"구조화",npc:[["peer","up","동기"]],res:"담당 구분",follow:"동기와 경쟁적 협업 시작."}]},
-   {kind:"story",title:"김세호의 번역 · 경고",desc:"빠르게 잘 처리한 걸 본 <span class='em'>김세호</span>가 농담처럼 경고한다. → <span class='flag'>FLAG_D3_김세호경고수신</span>, 김세호↑. 새겨듣는지/흘려듣는지 소소한 반응.",
-    voices:[{c:"sr",line:"잘한다고 소문나면? ‘그건 앞으로 다 네 담당’이라는 뜻이야."}]},
-  ]},
-  {name:"점심",turn:"",steps:[{kind:"lunch",title:"점심시간",desc:"동기가 오전 처리 방식을 넌지시 평가한다."}]},
-  {name:"오후",turn:"",steps:[
-   {kind:"explore",title:"오후 사무실 — 자유 탐색",desc:"무작위 NPC 요청 처리. 대표가 다가오는 이벤트가 발생하면 다음 상황으로.",
-    interacts:[{ic:"업무",o:"무작위 NPC 미니게임 요청",mini:true},{ic:"NPC",o:"NPC 대화",rz:"관계"},{ic:"진입",o:"대표 접근",enter:true,rz:"→ 보상=추가업무"}]},
-   {kind:"branch",title:"보상 = 추가 업무 (평판 분기)",desc:"<span class='em'>대표</span>가 오전 결과를 칭찬하며 새 업무를 얹으려 한다.",
-    voices:[{c:"ceo",line:"이거 진짜 빨랐어요. 그래서 말인데 이 건도 쭉 맡아주면…"}],
-    choices:[
-     {label:"“그렇게 하겠습니다”",axis:"순응",npc:[["ceo","up","대표"]],res:"업무 누적 <span class='trap'>⚠ 대가 한 박자 뒤</span>",follow:"‘혼자 다 하는 사람’ → 후반 책임 전가 밑밥."},
-     {label:"“담당을 나눠 주시면”",axis:"구조화",npc:[["hr","up","경영"],["peer","up","동기"]],res:"대표는 살짝 아쉬워하며 수용",follow:"<span class='flag'>FLAG_D3_담당요구</span>."},
-     {label:"김세호 경고 근거로 완곡히 사양",axis:"의도읽기",npc:[["sr","up","선임"]],res:"<span class='ccond'>FLAG_D3_김세호경고수신 필요</span>",follow:"회사어를 읽는 사람으로 인정, 대표 호감은 안 오름."}]},
-   {kind:"end",title:"오후 마무리 · 퇴근",desc:"미니게임 슬롯 후 정산."},
-  ]},
- ]},
-
-{n:"04",dow:"THU",title:"기존처럼 보이지 않게 기존대로",dir:"모순된 언어를 직접 선택. + 책임 소재 복선.",
- theme:"핵심 — 후반 4대 태도(순응·기록·구조화·의도읽기)를 미리 밟는다. 그리고 <b>금요일 ‘책임 소재’ 메인 이벤트의 복선</b>을 오전에 눈치채게 한다.",
- phases:[
-  {name:"아침 진입",turn:"",steps:[
-   {kind:"enter",title:"모순된 지시가 와 있다",desc:"출근하니 <span class='em'>대표</span>의 지시가 메신저·포스트잇으로 남겨져 있다. <span class='em'>동기</span>가 신경전을 걸고, <span class='em'>경영지원팀장</span>이 규정 화법으로 힌트를 흘린다.",
-    voices:[
-     {c:"ceo",line:"기존대로 하되 기존처럼 안 보이게. 눈에 띄되 튀지 않게요."},
-     {c:"peer",line:"너도 받았어? 난 기준 없으면 안 움직여. 담당부터 정하자."},
-     {c:"hr",line:"구두인가요, 문서인가요? 남겨두면 나중에 편합니다."}]},
-  ]},
-  {name:"오전",turn:"",steps:[
-   {kind:"explore",title:"오전 사무실 — 자유 탐색",desc:"자기 자리 상호작용 시 지시 해석(4택)으로 진입. <span class='em'>전임자 승인문서철</span> 상호작용 시 책임 소재 복선에 별도 접근 가능.",
-    interacts:[
-     {ic:"업무",o:"미니게임 슬롯",mini:true},{ic:"NPC",o:"NPC 대화",rz:"관계"},
-     {ic:"사물",o:"전임자 승인문서철",enter:true,rz:"→ 책임 소재 복선(S05)"},
-     {ic:"진입",o:"자기 자리 → PC",enter:true,rz:"→ 지시 해석"}]},
-   {kind:"branch",title:"지시를 어떻게 해석할까 (핵심 태도 4택)",desc:"이 선택이 이 날 평판의 중심. 어느 것도 완전한 정답은 아니다.",
-    choices:[
-     {label:"지시대로 그대로 수행",axis:"순응",npc:[["ceo","up","대표"]],res:"<span class='flag'>FLAG_D4=순응</span>",follow:"근거가 없어 문제 시 책임이 개인에게 남는다."},
-     {label:"이전 승인 사례를 찾아 근거를 남긴다",axis:"기록",npc:[["hr","up","경영"]],res:"<span class='flag'>FLAG_D4_승인사례탐색</span> <span class='seed'>기록 씨앗</span>",follow:"이 경로에서 책임 소재 복선(S05) 자동 노출 · Day15·23 기록 루트."},
-     {label:"우선 조건·담당을 다시 정리해 묻는다",axis:"구조화",npc:[["peer","up","동기"],["hr","up","경영"]],res:"<span class='flag'>FLAG_D4=구조화</span>",follow:"동기와 역할 분담 강화. 대표는 답답."},
-     {label:"대표 의중을 추론해 알아서 맞춘다",axis:"의도읽기",npc:[["ceo","up","대표"],["sr","up","선임"]],res:"<span class='flag'>FLAG_D4=의도읽기</span> <span class='trap'>⚠ 애매 지시 증가</span>",follow:"‘회사어 읽는 사람’으로 분류."}]},
-   {kind:"branch",title:"★ 책임 소재 복선 — 금요일 메인 이벤트 씨앗",star:true,desc:"승인 문서를 보다 이상한 점을 눈치챈다: <span class='em'>대표가 정한 건인데 ‘담당자’ 칸엔 개인 이름</span>이 적혀 있다. (2주차 전이라 ‘명확한 이상 기록’은 아니고, 어디까지나 눈치채는 수준.)",
-    voices:[{c:"sr",line:"(접촉 시) 여기선 문제 생기면 담당자 이름부터 찾아. 결정한 사람 말고."}],
-    cond:"‘기록’ 선택 시 자동 노출 · 또는 HUB에서 승인문서철 상호작용 시 접근",
-    choices:[
-     {label:"‘결정자와 담당자가 왜 다르지’ 곱씹는다",axis:"",npc:[],res:"<span class='flag'>FLAG_D4_책임구조인지</span> (강화)",follow:"Day5 마감회의 ‘담당 구조를 문제삼는다’ 선택지 개방."},
-     {label:"대수롭지 않게 넘긴다",axis:"",npc:[],res:"<span class='flag'>책임구조인지 (약)</span>",follow:"Day5 해당 선택지 미개방 또는 약화."}]},
-   {kind:"mini",title:"오전 마무리 · 김세호 회사어 해설",desc:"해석대로 결과물 제작(미니게임 슬롯). <span class='em'>김세호</span>가 지나가며 “‘튀지 않게’가 핵심”이라 해설 — 수용 시 김세호↑."},
-  ]},
-  {name:"점심",turn:"",steps:[
-   {kind:"lunch",title:"점심 — 동기의 캐물음",desc:"동기가 “넌 어떻게 해석했어?”라며 기준을 캐묻는다(정보 선점). 공유/함구를 고를 수 있다."},
-  ]},
-  {name:"오후",turn:"",steps:[
-   {kind:"explore",title:"오후 사무실 — 자유 탐색",desc:"미니게임/대화. 대표 검토 이벤트가 발생하면 다음 상황으로.",
-    interacts:[{ic:"업무",o:"미니게임 슬롯",mini:true},{ic:"진입",o:"대표 결과물 검토",enter:true,rz:"→ 결과물 반응"}]},
-   {kind:"branch",title:"결과물에 대한 대표의 반응 (평판 분기)",desc:"제출 결과물을 두고 <span class='em'>대표</span>가 반응(오전 태도에 따라 분기). 갈등 기미 시 책임을 현장으로 돌리는 톤.",
-    voices:[{c:"ceo",line:"제가 그 결과를 만들라고 지시한 건 아니죠. 실행 판단은 현장에서 하신 겁니다."}],
-    choices:[
-     {label:"결과를 그대로 밀어붙인다",axis:"",npc:[["ceo","up","대표"],["sr","up","선임"]],res:"오전 선택 따라 반응 · 김세호 해설 수용 시 선임↑"},
-     {label:"이전 승인 사례를 근거로 방어",axis:"",npc:[["hr","up","경영"]],res:"<span class='flag'>FLAG_D4_근거첨부</span>",follow:"책임이 개인에게만 남지 않도록 방어선."}]},
-   {kind:"end",title:"오후 마무리 · 퇴근",desc:"미니게임 슬롯 후 정산."},
-  ]},
- ]},
-
-{n:"05",dow:"FRI",title:"누락된 첨부파일",dir:"일의 문제 → 사람의 책임. 마감회의 = 책임 소재 메인.",
- theme:"핵심 — <b>책임이 원인보다 먼저 정해지는 회사</b>. 동기의 파일이 빠지고, 대응과 마감회의 발화가 신뢰·기록을 가른다. <b>Day4 복선이 여기서 회수</b>된다.",
- phases:[
-  {name:"아침 진입",turn:"",steps:[
-   {kind:"enter",title:"마감일 아침",desc:"사무실이 분주하다. <span class='em'>대표</span>가 낙관적으로 독려하고, <span class='em'>동기</span>는 자기 몫을 완벽히 끝낸 자신감을 보인다 — 이 자신감이 반전의 밑밥.",
-    voices:[{c:"ceo",line:"다들 오늘만 넘기면 돼요. 잘하고 있어요."},{c:"peer",line:"내 건 다 끝냈어. 담당별로 나눴으니 겹칠 일 없어."}]},
-  ]},
-  {name:"오전",turn:"",steps:[
-   {kind:"explore",title:"오전 사무실 — 자유 탐색",desc:"마감 잡무 요청이 많다. 자기 자리 상호작용 시 패키지 취합으로 진입.",
-    interacts:[{ic:"업무",o:"마감 잡무 미니게임 요청",mini:true},{ic:"NPC",o:"NPC 대화",rz:"관계"},{ic:"진입",o:"자기 자리 → 취합",enter:true,rz:"→ 패키지 취합"}]},
-   {kind:"mini",title:"패키지 취합 (누락 미발각)",desc:"제출 패키지를 취합(미니게임 슬롯). <span class='em'>파일 수가 많아 이 시점엔 누락이 눈에 띄지 않는다.</span>"},
-  ]},
-  {name:"점심",turn:"",steps:[{kind:"lunch",title:"점심시간",desc:"마감 직전이라 짧고 긴장된 분위기."}]},
-  {name:"오후",turn:"마감회의 3턴 포함",steps:[
-   {kind:"story",title:"누락 발각",desc:"마감 직전, 패키지에서 <span class='em'>동기가 만든 파일 하나</span>가 빠진 게 드러난다. 대표는 원인보다 담당을 먼저 묻고, 동기는 순간 얼어붙는다(기여·책임을 명확히 해온 그에게 치명).",
-    voices:[{c:"ceo",line:"지금 이거 누가 바로 다시 할 수 있어요? 원인은 나중에 봅시다."}]},
-   {kind:"branch",title:"누락 대응 (스토리 분기)",desc:"복구 방식을 선택한다. 동기는 이 과정에서 자신이 <span class='em'>보호받았는지</span>를 판단한다.",
-    choices:[
-     {label:"혼자 떠맡아 복구한다",axis:"독박",npc:[["ceo","up","대표"],["peer","flat","동기"]],res:"<span class='flag'>FLAG_D5=독박</span> <span class='trap'>⚠ 피로</span>",follow:"‘혼자 다 하는 사람’ → 후반 공식 책임자화 밑밥."},
-     {label:"누락 지점을 추적해 원인을 밝힌다",axis:"추적",npc:[["hr","up","경영"]],res:"<span class='flag'>FLAG_D5=추적</span>",follow:"원인 기록 → ‘개인 실수’ 프레임 반증."},
-     {label:"동기와 함께 즉시 수정한다",axis:"보호",npc:[["peer","up2","동기"]],res:"<span class='flag'>FLAG_D5_동료보호인식</span> <span class='seed'>연대 핵심</span>",follow:"동기가 ‘내 책임을 공식적으로 깎지 않는다’고 인식."}]},
-   {kind:"mini",title:"복구 작업",desc:"선택한 방식으로 복구(미니게임 슬롯)."},
-   {kind:"meeting",title:"★ 마감회의 — 책임 소재를 어떻게 말하는가",star:true,desc:"금요일 마지막 시퀀스이자 <span class='em'>책임 소재 메인 이벤트</span>. 대표는 부드럽게 넘기려 하고, <span class='em'>경영지원팀장</span>은 기록을 남기려 한다.",
-    voices:[{c:"hr",line:"문제가 생겼을 때 누구의 결정으로 기록할지를 묻는 겁니다."}],
-    choices:[
-     {label:"동기를 감싼다 (복구됨만 보고)",axis:"보호",npc:[["peer","up","동기"],["ceo","flat","대표"]],res:"<span class='flag'>책임발화=보호</span>",follow:"동기 신뢰↑ · 경영지원팀장은 ‘기록이 비었다’ 아쉬움."},
-     {label:"사실만 말한다 (누가 뭘 빠뜨렸는지)",axis:"사실",npc:[["hr","up","경영"],["peer","down","동기"]],res:"<span class='flag'>책임발화=사실</span>",follow:"기록은 남지만 동기와 경쟁·불신 강화."},
-     {label:"담당 구조 자체를 문제삼는다",axis:"구조",npc:[["hr","up","경영"],["ceo","down","대표"]],res:"<span class='ccond'>FLAG_D4_책임구조인지 필요</span> <span class='flag'>책임발화=구조</span>",follow:"대표 경계↑ · 후반 구조 인식 밑밥 (Day4 복선 회수)."}]},
-   {kind:"end",title:"1주차 종료 정산",desc:"‘살아남았다’는 안도로 닫되 <span class='em'>책임이 원인보다 먼저 정해지는 회사</span>라는 여운. 누적 평판·플래그가 2주차 분류의 입력값이 된다."},
-  ]},
- ]},
+/* ============ PART META ============ */
+const PART={
+  경영:{c:'var(--mgmt)',bg:'var(--mgmt-bg)',label:'경영'},
+  기획:{c:'var(--plan)',bg:'var(--plan-bg)',label:'기획'},
+  개발:{c:'var(--dev)',bg:'var(--dev-bg)',label:'개발'},
+  아트:{c:'var(--art)',bg:'var(--art-bg)',label:'아트'},
+  주인공:{c:'var(--amber)',bg:'var(--amber-bg)',label:'주인공'}
+};
+const GROUPS=[
+  {label:'경영진',ids:['ceo','director','admin']},
+  {label:'기획팀',ids:['plan_lead','plan_senior']},
+  {label:'개발팀',ids:['dev_lead','dev_senior']},
+  {label:'아트팀',ids:['art_lead','art_senior']},
+  {label:'주인공·프롤로그',ids:['player','mom']}
 ];
 
-const KIND={
- enter:{lbl:"진입·컷신",cls:"k-enter",dot:"",story:true},
- branch:{lbl:"분기·선택지",cls:"k-branch",dot:"d-amber",story:true},
- story:{lbl:"스토리",cls:"k-story",dot:"",story:true},
- meeting:{lbl:"회의",cls:"k-meeting",dot:"",story:true},
- explore:{lbl:"자유 탐색",cls:"k-explore",dot:"d-free",free:true},
- mini:{lbl:"미니게임",cls:"k-mini",dot:"d-free",free:true},
- lunch:{lbl:"점심",cls:"k-lunch",dot:"d-lunch"},
- end:{lbl:"마무리",cls:"k-end",dot:"",story:true},
+/* ============ SHARED (player / mom) ============ */
+const PLAYER={id:'player',type:'frame',part:'주인공',name:'주인공 (잡부)',rank:'수습 · {PlayerName}',mbti:'—',
+  oneline:'세 파트를 다 만질 수 있어서, 모든 실패가 결국 자기에게 수렴하는 수습.',
+  cards:[
+    ['담당','기획·개발·아트 전 파트를 오가는 잡부. 퇴사한 전임자의 빈자리(플로팅 롤)에 배치된다.'],
+    ['스탯','기획·개발·아트 3분야 이해도. 개인 업무·NPC 돕기·미니게임으로 성장(구 4스탯 폐기).'],
+    ['서사 기능','모두에게 필요하면서 모두의 잠재적 희생양. 전임자 = 전(前) 잡부. 잘할수록 blame이 수렴.'],
+    ['성격','고정 페르소나 없음. 프롤로그 입사 반응 3종이 대표·경영지원팀장 초기 관계값만 가른다.']
+  ]};
+const MOM={id:'mom',type:'note',part:'주인공',name:'어머니',rank:'프롤로그 전용 · 10인 밖',mbti:'ISFJ',
+  oneline:'사랑을 밥·돈·잔소리로 전하며, 자녀가 사회에서 밀려날까 두려워하는 어머니.',
+  cards:[
+    ['등장 범위','프롤로그에서만. 취업 압박을 코미디로 제시하고 이후 등장하지 않는다.'],
+    ['기능','취업 전 플레이어를 움직이는 동인이자 회사 밖 정서 기준점.'],
+    ['대표 대사','“첫날인데 빈속으로 가면 어떡해. 안 먹어도 가방엔 넣어놔.”'],
+    ['비고','스프라이트 Sprite/Mom. 정규 3종 엔딩 판정엔 관여하지 않음.']
+  ]};
+
+/* helper to build a full persona */
+function P(o){return o;}
+
+/* ============ PLAN A (기존 반영) ============ */
+const A={};
+A.ceo=P({id:'ceo',part:'경영',name:'박정환 대표이사',rank:'대표이사 · 브라이트 컴퍼니',mbti:'ENFP',
+ oneline:'직원의 가능성을 알아본다고 믿으며, 자신의 호의와 기대를 거절하기 어려운 의무로 바꾸는 대표.',
+ basic:['대표이사 / 브라이트 컴퍼니','40대 중반','창업 후 약 12~15년','소수 인원으로 시작해 현재 규모까지 키운 창업자','채용·평가·승진에 직접 개입하는 최종 의사결정권자'],
+ core:['이름과 개인 사정을 기억하고 작은 성과도 크게 칭찬하는 사람 중심의 대표','회사와 자신을 분리하지 못하며, 반대나 퇴사를 개인적 배신으로 받아들임','자신이 사람을 알아보고 키우는 능력이 있다는 사실을 증명하는 것','발탁한 직원이 떠나며 자신의 안목을 부정하는 것','개인적 후원·인정으로 사람을 편으로 만들고, 관계로 공식 절차를 대신함','감정을 빨리 읽고 격려하지만, 스트레스 시 ‘우리의 가치’와 ‘신뢰’로 압박'],
+ principles:['일을 맡기기 전 반드시 가능성·장점을 칭찬한다','업무 범위보다 그 일이 회사·개인에게 갖는 의미를 먼저 말한다','반대해도 화내지 않지만 ‘방향이 다르다’고 판단한다'],
+ rel:['잘못 찾아왔지만 면접까지 본 흥미로운 인재','빠른 성장, 대표 의도에 대한 이해, 기회에 대한 암묵적 충성','중요 회의에 참여시키고 직접 승진·보상을 약속','친절은 유지하되 핵심 업무·기회에서 조용히 배제','후원을 받는 대가로 그의 방식·판단까지 따라야 하는가'],
+ npc:[['이사','자신을 잘 이해하는 대학원 후배'],['경영지원팀장','고지식하지만 결정을 현실로 만들어주는 초기 구성원'],['기획팀장','끝까지 해내는 충성 직원이라 여기나 소진은 못 봄']],
+ story:['브라이트의 기회와 불합리를 동시에 상징','개인적 호의가 추가 업무·충성 의무로 변함','대표의 사람이 될지, 절차·동료를 우선할지','정규 3종의 평판 축 — 고속 승진·핵심 편입·수습 탈락 방향'],
+ arc:['플레이어를 자신이 발견한 특별한 신입으로 봄','성과가 높을수록 ‘내가 키운 사람’으로 인식','팀 성과 대신 더 큰 책임을 맡으라고 제안','승진·보호하되 지속적 동조를 요구','능력은 인정하되 “방향이 다르다”며 배제'],
+ dlg:['이름 호명 → 개인적 칭찬 → 일의 의미 강조 → 부탁 → 신뢰 표현','한 문장이 길고, 중간에 경험담·철학이 덧붙음','우리, 함께, 성장, 기회, 믿음, 방향','화보다 실망·서운함을 강조','직원엔 멘토, 이사엔 선배, 갈등엔 무겁게','숫자·마감만의 짧고 직접적인 명령'],
+ q:['{PlayerName}씨, 손이 넓으시더라고요. 이번 건 기획팀에도 좀 빌려드릴게요. 이런 게 다 경험이에요.','제 판단이 틀렸다고 하셔도 괜찮습니다. 다만 우리가 같은 게임을 보고 있다고 생각했는데, 그 부분이 조금 아쉽네요.','좋은 스튜디오를 만들고 싶었어요. 근데 어느 순간부터 좋은 직원은 안 나가는 직원이란 뜻이 돼버렸네요.']});
+
+A.director=P({id:'director',part:'경영',name:'이사',rank:'이사 · 전략·신사업 총괄',mbti:'ENTJ',
+ oneline:'문제를 해결하기보다 문제의 정의를 바꿔, 언제나 자신이 옳은 방향을 제시한 사람으로 남는 전략가.',
+ basic:['이사 / 전략·신사업 총괄','30대 후반~40대 초반','약 2~3년','대표의 대학원 후배로 영입','신규 사업·외부 프로젝트·회사 전략과 명분을 설계'],
+ core:['아이디어가 많고 말이 빠르며 기존 방식을 과감히 의심하는 임원','학연 입사 평가에 민감, 실무진의 반박을 권위 도전으로 받아들임','후배가 아닌 독립적인 전략가로 인정받는 것','말만 많은 낙하산이라는 평가가 굳어지는 것','문제를 유리하게 재정의하고, 실패도 새 가설·학습으로 설명','가능성을 빠르게 던지지만 책임이 한 안에 고정되는 것은 회피'],
+ principles:['답보다 질문·전제가 맞는지 먼저 의심한다','명확한 지시 대신 여러 가능성을 던져 실무진이 선택하게 한다','결과가 좋으면 방향성, 나쁘면 실행 해석 문제로 돌린다'],
+ rel:['아이디어를 빨리 결과로 바꿀 젊은 실행자','의도를 알아서 해석하고 실무진을 대신 설득','외부 미팅·신규 프로젝트에 동행, 전략 업무로 격상','맥락을 못 읽는 단순 실행자로 평가','모호한 지시의 책임은 누가 지는가'],
+ npc:[['대표','후원자이자 학교 선배(영원한 후배 취급은 싫음)'],['기획팀장','현장 모른다 여기나 공식 지시는 거절 못 함'],['개발팀장','전략을 증명할 해결사(성과 독점 시 위협)']],
+ story:['학연·전략 언어가 조직 내 권력으로 작동','전략을 말한 사람과 수행한 사람의 성과·책임 분배','이사 관점 수용 vs 실행 기준 요구','고객사 감사(퍼블리셔·투자사 실사)의 대외 접점 — 스코프 변경의 원천'],
+ arc:['가볍게 아이디어를 던지고 반응을 관찰','말을 잘 해석하면 비공식 대리인으로 활용','실패 가능성 높은 지시를 어떻게 기록할지 결정','후계 실무자·외부 파트너로 추천','실패를 실행 판단 문제로 공식화'],
+ dlg:['질문 → 기존 전제 반박 → 새 관점 → 실행은 상대에게','빠르고 접속사가 많으며 여러 가설을 제시','관점, 구조, 가능성, 본질, 가설, 실험','불쾌할수록 더 논리적·유창하게','대표엔 재치 있는 후배, 실무진엔 강연자','정답을 단호히 확정하거나 자기 책임을 먼저 인정'],
+ q:['왜 이걸 지금 스펙대로만 만들죠? 지금 필요한 건 더 빨리 만드는 게 아니라, 무슨 게임을 만드는지 다시 정의하는 일일 수도 있습니다.','제가 그 빌드를 그렇게 만들라고 한 건 아니죠. 방향을 열었고, 구현은 현장 판단이었습니다.','제 아이디어가 틀렸다는 말보다, 제가 애초에 여기 있을 사람이 아니었다는 시선이 더 신경 쓰입니다.']});
+
+A.admin=P({id:'admin',part:'경영',name:'경영지원팀장',rank:'경영지원팀장 · 인사·총무',mbti:'ISTJ',
+ oneline:'대표의 즉흥적인 회사를 규정과 기록으로 겨우 현실에 묶어두는 관리자.',
+ basic:['경영지원팀장 / 인사·총무','30대 후반~40대 초반','약 8~10년','회사가 인력을 확대하던 시기의 초기 구성원','계약·인사·근태·평가·징계·퇴사 절차 관리'],
+ core:['융통성이 부족하고 작은 절차 오류도 넘어가지 않는 관리자','조직이 얼마나 위태로운지 알기에 규칙에 더 집착','누가·언제·무엇을 결정했는지 분명히 남기는 것','구두 지시로 생긴 사고의 최종 책임이 자신에게 오는 것','계약·결재·절차를 통제해 자신과 조직을 보호','과거 사례·공식 절차 기준, 예외가 반복되면 시스템이 무너진다고 봄'],
+ principles:['모든 구두 지시는 문서·메일로 다시 확인한다','내용이 맞아도 절차가 틀리면 즉시 수정을 요구한다','개인적 호의보다 동일한 기준이 사람을 보호한다고 믿는다'],
+ rel:['정상 절차를 벗어나 들어온 관리 대상·잠재 위험','문서를 직접 읽고 자신의 책임 범위를 확인하는 것','평가 기준·계약 내용을 미리 알려주고 기록으로 보호','모든 예외를 철회하고 규정을 가장 엄격히 적용','회사가 원하는 문서에 서명할지, 수정·거부할지'],
+ npc:[['대표','가장 많이 충돌하지만 가장 오래 함께한 상사'],['개발팀장','현장 리스크는 이해하나 반복되는 예외 승인은 어려움'],['개발팀 선임','실무는 신뢰하나 냉소적 태도는 아쉬움']],
+ story:['비공식 지시가 공식 계약·평가로 바뀌는 지점','인간적으론 이해하나 조직을 위해 불리한 절차를 집행','서명·수정 요구·기록 확보·거부','정규 3종의 집행자 — 사고 경위서·계약 부속·최종 평가 문서'],
+ arc:['플레이어를 대표가 만든 또 하나의 행정 문제로 봄','문서를 꼼꼼히 확인할수록 신뢰가 높아짐','책임을 플레이어에게 이전하는 문서에 서명을 받아야 함','공식 기록으로 플레이어의 책임 범위를 제한','감정 없이 계약 종료·출입 권한 회수를 집행'],
+ dlg:['사실 확인 → 규정 제시 → 처리 순서 → 확인 질문','짧고 정확하며 항목을 번호로 나눔','절차상, 원칙적으로, 기록, 확인, 기한, 책임','답답할수록 같은 문장을 더 정확히 반복','대표엔 제동 거는 존댓말, 직원엔 사무적 안내','추상적 위로, 감에 근거한 판단, 불명확한 시간 표현'],
+ q:['첫째, 전체 스펙 읽으시고요. 둘째, 수정할 부분 있으면 서명 전에 말씀하세요. 제출 기한은 오늘 17시입니다.','대표님, 가능하냐는 질문이 아닙니다. 문제가 생겼을 때 누구의 결정으로 기록할지를 묻는 겁니다.','제가 적어두지 않으면 나중엔 아무도 그런 말 한 적 없다고 합니다. 그래서 남기는 겁니다.']});
+
+A.plan_lead=P({id:'plan_lead',part:'기획',name:'기획팀장',rank:'기획팀장',mbti:'ESFJ',
+ oneline:'모두의 게임을 지키려다, 결국 모두에게 자기처럼 갈아넣는 법을 요구하게 된 기획팀장.',
+ basic:['기획팀장','30대 후반','약 7~9년','실무자로 입사해 내부 승진','스코프·마일스톤·일정·품질의 최종 책임'],
+ core:['팀원 상태를 세심히 챙기고 문제가 생기면 직접 뛰어드는 상사','거절하면 다른 팀원이 피해 본다는 죄책감으로 상부 요구를 계속 수용','우리 기획이 ‘구멍 났다·재미없다’는 평가를 받지 않는 것','자신이 쳐낸 기획 때문에 프로젝트가 무너지는 것','부족한 일정을 자기 노동과 팀의 야근으로 메움','사람 사정을 잘 기억하나 누적된 희생을 관계적 의무로 회수'],
+ principles:['부탁 전에 상대가 얼마나 힘든지 안다고 말한다','상부 요구를 자기가 먼저 받아 팀원에게 나눈다','함께 고생하면 불합리한 요구도 정당해진다고 여긴다'],
+ rel:['밀린 기획을 덜어줄 새 인력','설명 없이도 팀 상황을 이해하고 자발적으로 돕기','가족 같은 핵심으로 상부 앞에서 보호','팀 어려움을 외면한다며 업무 태도를 문제 삼음','팀을 돕는 것과 불가능한 일을 거절하는 것 중 무엇이 진짜 동료애'],
+ npc:[['대표','인정해준 고마운 상사(칭찬이 추가 업무로 돌아옴)'],['이사','현장 모른다 여기나 공식 지시는 거절 못 함'],['기획팀 선임','믿는 실무자지만 계속 기대는 게 미안함']],
+ story:['좋은 의도가 불합리한 업무 구조를 유지하는 방식','보호를 위한 희생이 또 다른 희생을 부름','팀장 돕기·업무 협상·상부 문제 제기','진척률(마일스톤) 부풀리기의 출발점 — 필수사건 ③'],
+ arc:['업무량을 나눌 신입으로 봄','위기를 해결할수록 정서적으로 의존','불가능한 일정에서 누군가의 희생을 선택','관리 방식이 문제였음을 인정, 상부에 일정 재협상','자신·기존 팀을 지키려 플레이어에게 실패 책임 전가'],
+ dlg:['고생 인정 → 사과 → 업무 요청 → 자기도 돕겠다는 약속','조심스레 시작하나 부탁 내용이 점점 늘어남','미안한데, 오늘만, 같이, 다들 힘드니까','화보다 서운함·죄책감을 이용','상부엔 순응, 팀원엔 배려, 압박 시 희생을 비교','냉정한 성과 판단, 짧고 단호한 거절'],
+ q:['어제 늦게까지 한 거 아는데, 이 기획서만 오전 중에 한 번만 봐줄 수 있을까요? 저도 옆에서 같이 볼게요.','다들 힘든 건 똑같잖아요. 근데 왜 본인 파트만 따로 떼서 생각하는지, 솔직히 좀 서운하네요.','제가 안 받으면 다른 팀원이 받잖아요. 근데 제가 계속 받다 보니, 결국 팀원들이 같이 받고 있었네요.']});
+
+A.plan_senior=P({id:'plan_senior',part:'기획',name:'기획팀 선임',rank:'기획팀 선임 · 1주차 미니게임 제공',mbti:'ESTJ',mini:true,
+ oneline:'기준만 명확하면 누구든 이긴다고 믿어, 모든 기여와 책임을 기록으로 못박는 기획 선임.',
+ basic:['기획팀 선임 (팀원·선임급)','20대 후반~30대 초반','약 3~5년','정상 절차로 입사해 실적을 쌓음','기획 실무 핵심이자 신규 온보딩 업무 배정'],
+ core:['성실·정돈, 담당과 완료 기준을 명확히 하는 모범 선임','절차 없이 들어온 잡부가 자기보다 인정받을까 불안','노력·성과를 공정히 평가받아 인정(정규 평판·승진)','기준 없는 조직에서 자기 노력만 이용당하는 것','담당·기한·성과·책임을 명확히 해 공식 평가에서 우위','불확실성을 싫어하며 감정보다 규칙·결과로 정리'],
+ principles:['업무 전 담당과 완료 기준을 확인한다','협력해도 기여는 구분해 기록한다','불공정하면 뒤에서 불평 말고 직접 기준을 요구한다'],
+ rel:['검증 없이 기회 받은 불공정한 경쟁자','같은 기준으로 평가받고 자기 실수는 직접 책임','역할을 명확히 나눠 서로 보완하는 경쟁적 동료','정보를 선점하고 실수를 공식 보고','공동 성과·공동 책임을 어디까지 나눌 것인가'],
+ npc:[['기획팀장','믿지만 자기 몫이 흐려지는 건 싫음'],['개발팀 선임','실무는 인정하나 체념·비공식 규칙은 싫어함'],['주인공','경쟁자이자 가장 가까운 협력 가능성']],
+ story:['같은 파트에서 다른 생존 방식을 보여주는 거울','동료가 경쟁자이고 경쟁자가 동료가 되는 관계','경쟁·협력·성과 공유·책임 전가','포스트모템의 증인·기록자 — 책임 소재를 문서로 남김'],
+ arc:['모든 결과를 플레이어와 비교','작은 성과·실수 처리 방식에 따라 신뢰 형성','공동 기획을 한 사람 성과로 보고할 기회','위험을 감수하고 함께 문제를 제기','자기 자리를 지키려 실패 책임을 전가'],
+ dlg:['업무 범위 → 담당 → 기한 → 평가·기록 방식','명확·단정하며 질문도 답을 요구하는 형태','기준, 담당, 결과, 기록, 책임','불안할수록 더 공식적·딱딱하게','상사엔 보고체, 플레이어엔 경쟁적 존댓말, 친해지면 짧은 반말','두루뭉술한 위로, 결론 없는 추측'],
+ q:['기획 파트는 반씩 나누죠. 저는 시스템, {PlayerName}씨는 밸런스. 문서에 담당 구간도 같이 적을게요.','같이 했다고 제 성과까지 공동 소유가 되는 건 아니잖아요. 기준대로 정리해 주세요.','열심히 하면 되는 줄 알았어요. 근데 기준이 없으면, 열심히 한 사람부터 손해를 보더라고요.']});
+
+A.dev_lead=P({id:'dev_lead',part:'개발',name:'개발팀장',rank:'개발팀장 · 테크 디렉터',mbti:'INTJ',
+ oneline:'무너진 빌드를 다시 세울 수 있지만, 그 과정에서 누가 잘려나가는지는 비용으로 계산하는 개발팀장.',
+ basic:['개발팀장 / 테크 디렉터','30대 중반','위기 프로젝트 정비 경험','목표·범위·일정·인력 구조를 재정비','빌드 품질과 기술 결정의 최종 책임'],
+ core:['판단이 빠르고 업무 기준을 명확히 제시하는 전문가','회사보다 자기 경력·시장 가치를 우선, 실패할 관계는 빨리 정리','위기 빌드를 성공시켜 더 큰 권한·선택권을 얻는 것','브라이트의 혼란에 휘말려 자기 이름으로 실패가 남는 것','목표·담당·기한·완료 기준·책임 범위를 먼저 협상','장기 목표에 사람·자원을 재배치하며 감정보다 결과'],
+ principles:['시작 전 성공 기준과 책임자를 확정한다','능력 있는 직원에 기회를 집중하되 높은 결과를 요구한다','안 되면 일정·범위·인력 중 하나를 즉시 잘라낸다'],
+ rel:['교육은 부족해도 성장 빠른 활용 가치 높은 실무자','모호한 회사 문화를 버리고 성과 중심에 적응','협상법·기술을 전수하고 외부 기회를 제안','예측 불가 리스크로 분류하고 책임을 분리','성장 기회 vs 타인을 성과 수단으로 취급'],
+ npc:[['이사','자신을 영입한 후원자지만 추상적 전략가로 평가'],['기획팀장','프로젝트 권한·운영 방식으로 충돌'],['대표','최종 결정권자·협상 가능한 자원']],
+ story:['회사 밖 정상 기준을 제시하며 성과주의 한계도 보여줌','효율 vs 인간관계, 명확한 책임 vs 약자 배제','측근 vs 조건 협상 vs 기존 팀 보호','최종 위기(Day25) 대응의 축 — 커밋 오너십을 담당자에게 고정(필수사건 ④)'],
+ arc:['구원자처럼 등장','능력을 확인하고 중요 업무를 집중','성과를 위해 일부 직원을 희생해야 하는 상황','권한·성과·보상을 명확히 나누고 함께 이동','플레이어 성과를 관리 성과로 흡수, 실패 위험만 남김'],
+ dlg:['목표 → 선택지 → 담당 → 기한 → 확인','결론부터 말하고 한 문장에 한 정보','목표, 완료 기준, 담당, 일정, 결과','화보다 선택지를 줄이고 결정권을 회수','직급보다 역량·책임 범위로 말투가 달라짐','모호한 부탁, 긴 위로, 결론 없는 토론'],
+ q:['목표는 금요일 빌드입니다. 이 모듈은 {PlayerName}씨. 오늘 16시에 중간 커밋 확인하죠.','사정은 이해합니다. 일정은 이해 안 해줍니다. 범위를 줄이든 담당을 바꾸든 지금 결정하세요.','사람을 버린 게 아니라 리스크를 줄였다고 말해왔습니다. 두 문장이 정말 다른 뜻이었으면 좋겠군요.']});
+
+A.dev_senior=P({id:'dev_senior',part:'개발',name:'김세호 선임',rank:'개발팀 선임 · 1주차 미니게임 제공',mbti:'INTP',mini:true,
+ oneline:'회사의 모순을 누구보다 정확히 해석하지만, 행동하는 것보다 설명하는 데 익숙해진 선임.',
+ basic:['김세호 / 개발팀 선임','30대 초반','약 4~6년','신입 입사 후 여러 인력 교체·프로젝트 실패를 경험','핵심 실무자이자 암묵 규칙의 비공식 교육 담당'],
+ core:['친근한 농담·냉소적 해설로 회사 요령을 알려주는 선배','전임자가 도움을 요청했을 때 침묵한 일을 계속 합리화','살아남으면서도 같은 일이 반복되지 않게 하는 것','옳은 말을 했다가 전임자처럼 제거되는 것','회사 말과 실제 의미를 번역, 위험·보상을 계산해 행동 결정','구조 모순은 잘 파악하나 정서적 결단·행동은 늦음. 빌드·커밋 히스토리를 조용히 남겨둠'],
+ principles:['상사의 말을 실제 의미로 번역한다','공식 자리엔 침묵, 사적으로 정확한 분석을 제공한다','행동을 요구받으면 결과·위험부터 설명한다'],
+ rel:['회사 언어를 몰라 위험해 보이는 과거의 자신','규칙을 이해하되 자신처럼 체념하지 않기','숨은 커밋 기록·전임자 일을 알려주고 결정적 순간 증언','지나치게 순응하면 정보를 차단','정보를 주는 것과 직접 행동하는 것은 다른 문제'],
+ npc:[['개발팀장','구조는 잘못됐지만 성실히 유지하는 상사'],['기획팀 선임','능력 있으나 경쟁심으로 위험한 선택 가능'],['전임자','자신의 침묵·죄책감을 상징하는 부재한 인물']],
+ story:['암묵지를 설명하는 튜토리얼 인물이자 플레이어의 잠재적 미래','정확히 이해하는 것이 실제 변화와 같지는 않다는 문제','그의 생존 방식을 따를지, 행동을 요구할지','전임자 진실 증언(Day13, 필수사건 ⑤)·로그 증거의 열쇠'],
+ arc:['회사 용어·요령을 농담처럼 알려줌','플레이어에게 전임자를 겹쳐 보기 시작','전임자의 도움 요청을 외면했음을 고백','위험을 감수하고 증언자·공동 대응자','다시 침묵하고 가만히 있으라 조언'],
+ dlg:['회사 표현 인용 → 실제 의미 분석 → 냉소적 농담','설명이 길어지다 스스로 예외를 덧붙여 정정','정확히는, 이론상, 번역하면, 확률','직접 말 안 하고 분석·농담으로 우회','후배엔 반말, 상사엔 최소 존댓말, 본심 땐 농담이 사라짐','단순한 격려, 즉흥적 결단, 뜨거운 감정 표현'],
+ q:['팀장이 “리소스 되면”이라고 했지? 문법상 선택인데, 사내 용례로 번역하면 지금 당장이란 뜻이야.','네가 틀렸다는 게 아니야. 여기선 맞는 말 한 사람의 평균 생존 기간이 짧다는 거지.','그때 계산을 잘못한 게 아니야. 그냥 내가 살 수 있는 쪽만 계산했어.']});
+
+A.art_lead=P({id:'art_lead',part:'아트',name:'아트팀장',rank:'아트팀장 · 아트 디렉터',mbti:'ISFP',
+ oneline:'악의는 없지만 “느낌”으로만 말해서, 끝없는 재작업을 만드는 아트 디렉터.',
+ basic:['아트팀장 / 아트 디렉터','30대 중후반','실무 아티스트 출신','아트 방향·퀄리티의 최종 판단','비주얼 톤과 완성도의 게이트'],
+ core:['조용하고 취향이 확고하며 결과물에 예민','자신도 기준을 언어화 못 함을 알면서 감으로 판단','자기 눈에 ‘그림이 되는’ 결과물','우리 아트가 ‘싸구려처럼 보인다’는 말','명확한 기준 대신 감각으로 반려해 재작업이 누적','순간의 미감엔 확신하나 원칙·일정으로 환원은 거부'],
+ principles:['완성물을 ‘느낌’으로 판정한다','왜인지 못 짚어도 아니다 싶으면 반려한다','좋은 결과엔 즉시·강하게 반응한다'],
+ rel:['손 빠른 새 인력','자기 취향의 언어를 알아서 해석해주기','취향 통역자로 신뢰하고 실무 요령을 공유','‘센스가 없다’며 조용히 핵심 작업에서 배제','모호한 피드백의 책임은 누가 지는가'],
+ npc:[['이사','자기 미감을 ‘비효율’로 볼까 경계'],['아트팀 선임','믿는 손이지만 계속 갈아넣게 만드는 미안함'],['기획팀장','일정과 퀄리티로 자주 충돌']],
+ story:['브라이트의 모호한 언어(공포는 언어에서)의 분야별 얼굴','주관적 피드백이 만드는 무한 재작업','취향 맞추기 vs 기준 요구','아트 진척 지연이 후반 blame으로 회수'],
+ arc:['손 빠른 신입으로 봄','취향을 잘 맞추면 신뢰·의존','마감과 퀄리티가 정면충돌하는 상황','자기 모호함을 인정하고 기준을 함께 만듦','끝까지 ‘느낌’만 고집, 실패를 센스 문제로'],
+ dlg:['애매한 호불호 → 재요청 → 못 짚는 미안함','짧고 여백이 많으며 말끝을 흐림','느낌, 뭔가, 아쉬워요, 한 번만 더','말로 못 하는 답답함을 침묵·한숨으로','팀원엔 부드럽지만 요구는 늘어남','구체적 수치 기준, 단호한 승인'],
+ q:['나쁘진 않은데… 뭔가 아쉬워요. 느낌 알죠? 한 번만 더 가볼까요.','제가 콕 집어 말 못 하는 게 답답하시겠지만, 이건 그냥… 아직 안 예뻐요.','저도 알아요, 제가 기준을 못 주는 거. 근데 기준을 딱 정하는 순간, 그 이상은 안 나오더라고요.']});
+
+A.art_senior=P({id:'art_senior',part:'아트',name:'아트팀 선임',rank:'아트팀 선임(계약직) · 1주차 미니게임 제공',mbti:'INFP',mini:true,
+ oneline:'좋은 걸 만들고 싶어 버티지만, 계약 갱신 앞에서 자기 목소리를 먼저 지우는 선임 계약직 아티스트.',
+ basic:['아트팀 선임 (계약직)','20대 후반~30대 초반','프로젝트 단위 계약, 갱신을 앞둠','실력은 선임급이나 신분은 계약직','아트 실무 핵심이자 온보딩 업무 배정'],
+ core:['조용하고 성실하며 남의 부탁을 거절하지 못함','자기 결과물엔 자부심이 있으나 계약 앞에선 순응','계약 갱신과 부끄럽지 않은 결과물','잡부를 믿고 나섰다 자기만 계약을 잃는 것','갈등을 피하고 야근으로 메움, 부당해도 ‘제가 하면 되죠’','이상과 현실 사이에서 조용히 자기를 깎음'],
+ principles:['자기 몫보다 팀 분위기를 먼저 본다','부당해도 우선 삼키고 밤에 메운다','후배에겐 자기처럼 되지 말라고 조용히 경고한다'],
+ rel:['조심스러운, 선배 아닌 선배','자기 대신 말해주지 않아도 되니 자기처럼 되지 않기','자기 몫을 말할 용기를 조금씩','더 움츠러들어 혼자 떠안음','버티는 게 생존인지, 목소리 내는 게 생존인지'],
+ npc:[['아트팀장','‘느낌’ 피드백을 가장 많이 받아내는 사람'],['개발팀 선임(김세호)','서로의 처지를 아는 현실적 대화 상대'],['주인공','자기 과거를 겹쳐 보는 후배']],
+ story:['크런치를 가장 조용히 떠안는 사람','잡부가 ‘왜 아트가 늦었냐’ blame 받을 때 실제로 갈아넣은 사람 — 죄책감 트리거','대신 짊어질지, 함께 나눌지','(특별분기 “같이 나갑시다” 정서 중심 · 보류) 정규에선 평판·정서 텍스처'],
+ arc:['혼자 다 떠안는 조용한 실무자','플레이어가 존중하면 조금씩 자기 몫을 말함','자기 크런치가 잡부 blame으로 오인되는 순간','처음으로 “이건 제 몫이 아니었어요”를 말함','끝까지 삼키고 계약 갱신에 매달림'],
+ dlg:['괜찮다는 방어 → 자기 축소 → 플레이어 걱정','짧게 이어지다 말끝을 흐림','괜찮아요, 어차피, 제가 하면, ~하지 마요','직접 말 안 하고 행동·야근으로','윗사람엔 과하게 공손, 후배엔 미안함','자기 권리 주장, 냉정한 거절'],
+ q:['저는 괜찮아요. 어차피 제가 제일 빠르니까….','{PlayerName}씨는… 그냥 하란 대로만 하지 마요. 저처럼 되지 말고요.','제가 만든 건 부끄럽지 않아요. 근데 제 이름으로 남는 건 하나도 없더라고요.']});
+
+A.player=PLAYER; A.mom=MOM;
+
+/* ============ PLAN B (완전 신규) ============ */
+const B={};
+B.ceo=P({id:'ceo',part:'경영',name:'박정환 대표이사',rank:'대표이사 · 브라이트 컴퍼니',mbti:'ENTP',
+ oneline:'다음 대박을 늘 알아본다고 믿으며, 프로젝트를 계속 갈아엎으면서도 실패는 시장 탓으로 남기는 대표.',
+ basic:['대표이사 / 브라이트 컴퍼니','40대 초반','창업 후 약 10년','트렌드를 좇아 사업을 여러 번 전환','채용·방향·투자에 직접 개입하는 최종 결정권자'],
+ core:['에너지가 넘치고 레퍼런스를 폭격하며 “이번엔 이게 대세”','결정을 미루려 계속 새 가능성을 던지고 책임 고정을 회피','업계에서 ‘선구안 있는 대표’로 남는 것','한 발 늦어 트렌드를 놓치는 것','방향을 자주 바꿔 실패를 ‘피벗’으로 리프레이밍','아이디어는 무한하나 마무리·책임은 남에게'],
+ principles:['회의마다 새 레퍼런스로 방향을 제안한다','지표·트렌드로 기존 계획을 흔든다','성공하면 ‘내 감’, 실패하면 ‘시장 타이밍’'],
+ rel:['뭐든 빨리 만들어내는 재밌는 신입','새 방향을 군말 없이 즉시 구현','신규 실험 프로젝트를 맡기고 띄워줌','‘올드하다’며 조용히 관심을 거둠','계속 바뀌는 방향의 책임은 누가 지는가'],
+ npc:[['이사','자기 직감을 데이터로 포장해주는 파트너'],['기획팀장','비전을 실현해줄 것이라 믿는 사람'],['개발팀장','속도를 못 낸다고 답답해하는 상대']],
+ story:['잦은 피벗이 프로젝트 혼란·크런치의 상류 원인','대표의 방향 전환과 현장의 감당 사이 간극','대표의 다음 대박에 올라탈지, 지금을 지킬지','정규 3종의 평판 축 — 피벗 수용도에 따라 총애·배제'],
+ arc:['잘 따라오는 재밌는 신입으로 봄','새 방향을 잘 구현할수록 총애','실패한 잼의 책임을 ‘시장 탓’으로 돌리려 함','신규 실험의 리더로 띄워줌','속도를 못 낸다며 조용히 관심을 거둠'],
+ dlg:['레퍼런스 제시 → 흥분 → 방향 전환 → 동조 유도','빠르고 감탄사가 많으며 링크를 던짐','대세, 트렌드, 피벗, 감, 타이밍, 다음','실망보다 조급함을 드러냄','직원엔 열정적, 이사엔 공모하듯, 갈등엔 화제 전환','차분한 장기 계획, 자기 책임의 인정'],
+ q:['{PlayerName}씨, 이번 주말에 이거 하나만 봐요. 이게 다음이에요. 느낌 오죠?','제가 방향을 바꾼 게 문제가 아니라, 우리가 그 방향을 못 따라간 거죠.','저도 알아요, 자꾸 바꾸는 거. 근데 안 바꾸면 뒤처지는 게 더 무섭더라고요.']});
+
+B.director=P({id:'director',part:'경영',name:'이사',rank:'이사 · 사업·지표 총괄',mbti:'INTJ',
+ oneline:'모든 것을 숫자로 환원해, 사람의 판단이 개입할 틈을 지표로 지워버리는 이사.',
+ basic:['이사 / 사업·지표 총괄','30대 후반','약 3년','데이터 기반 의사결정을 명분으로 영입','KPI·지표·투자 관계를 관리'],
+ core:['대시보드로 말하고 정성적 반박을 ‘감정’으로 치부','측정 불가능한 것은 존재하지 않는다고 여김','지표로 증명되는 의사결정','수치로 설명 안 되는 실패의 책임','KPI로 성과·책임을 계량화','지표에 안 맞으면 사람보다 전제를 의심'],
+ principles:['모든 결정을 측정 가능한 지표로 환원한다','정성적 주장엔 데이터를 요구한다','지표가 나쁘면 담당 파트의 문제로 귀속한다'],
+ rel:['성과를 수치로 빠르게 내주는 실행자','감이 아니라 데이터로 말하는 것','지표가 좋으면 전략 리뷰에 참여시킴','지표가 나쁘면 냉정하게 담당으로 분류','수치가 못 담는 가치를 어떻게 인정받을 것인가'],
+ npc:[['대표','직감을 지표로 정당화해주는 관계'],['기획팀장','‘재미’를 수치로 못 낸다고 압박'],['개발팀장','완성도 지표로 서로를 견제']],
+ story:['지표가 사람의 판단을 대체하는 방식','수치로 환원되지 않는 노동의 가치 소거','지표를 맞출지, 지표의 전제를 반박할지','지표(리텐션·완성도) 조작·부풀리기의 명분 — 감사(실사)를 지표로 정당화'],
+ arc:['성과를 지표로만 관찰','수치가 좋을 때만 인정','지표를 위해 진척률을 부풀리라 요구','데이터로 플레이어의 기여를 공식 인정','지표 미달을 담당 책임으로 못박음'],
+ dlg:['지표 제시 → 원인 귀속 → 개선 목표 → 확인','건조하고 수치가 문장의 중심','리텐션, 완성도, KPI, 지표, 목표치, 근거','불만도 그래프처럼 평평하게','대표엔 데이터 파트너, 실무진엔 심사관','감에 근거한 위로, 정성적 칭찬'],
+ q:['리텐션이 안 나오면 그건 재미가 없다는 뜻이고, 재미는 기획 책임이죠.','숫자는 협상하지 않습니다. 목표치를 바꾸든가 결과를 바꾸든가입니다.','저도 사람이 안 보이는 건 압니다. 근데 안 보이는 건 관리할 수가 없어요.']});
+
+B.admin=P({id:'admin',part:'경영',name:'경영지원팀장',rank:'경영지원팀장 · 인사·총무',mbti:'ESFJ',
+ oneline:'늦은 급여와 대표의 즉흥을 인간적으로 메우다, 결국 모두를 조용히 붙잡아두는 관리자.',
+ basic:['경영지원팀장 / 인사·총무','40대 초반','약 9년','회사 초창기부터 살림을 도맡음','급여·계약·근태·복지·퇴사 실무'],
+ core:['따뜻하고 다 챙기며 분위기를 살피는 관리자','회사가 위태로운 걸 알지만 정 때문에 못 떠남','아무도 급여·계약으로 상처받지 않는 것','자기가 놓으면 다 무너지는 것','규정보다 정과 융통으로 틈을 메움(그래서 문제도 덮임)','사람 관계로 조직을 지탱하나 원칙이 흐려짐'],
+ principles:['문제를 우선 ‘좋게좋게’ 덮어 관계를 지킨다','대표의 즉흥을 뒤에서 수습해 현실로 만든다','규정보다 사람을 먼저 본다'],
+ rel:['챙겨줘야 할 딱한 신입','회사 사정을 이해하고 너무 티 내지 않기','급여·계약 문제를 사적으로 먼저 해결','실망하면 서운함으로 거리를 둠','정으로 덮는 것과 원칙대로 남기는 것 사이의 충돌'],
+ npc:[['대표','미워도 끝까지 감싸는 오랜 동지'],['기획팀장','서로의 소진을 알아보는 사이'],['아트팀 선임','계약 문제로 가장 마음 쓰는 사람']],
+ story:['좋은 마음이 문제의 책임 소재를 흐리는 방식','사고 경위서 앞에서 가장 미안해하는 집행자','좋게 덮어달라 부탁할지, 기록을 남길지','문제를 덮어온 관행이 후반 책임 이전의 빌미가 됨'],
+ arc:['플레이어를 챙겨야 할 막내로 봄','사정을 이해할수록 사적으로 도움','책임 이전 문서를 결국 내밀어야 하는 상황','비공식으로 플레이어를 보호하려 애씀','회사를 위해 미안한 얼굴로 절차를 집행'],
+ dlg:['안부·챙김 → 사정 설명 → 부탁 → 미안함','따뜻하고 말이 이어지며 사족이 많음','미안해요, 좋게, 티 내지 말고, 제가 알아서','서운함과 미안함을 자주 드러냄','대표엔 감싸는 존댓말, 직원엔 살뜰한 챙김','차가운 통보, 감정 없는 원칙론'],
+ q:['급여는 이번에도 조금 늦을 것 같아요. 제가 대표님한테 다시 말해볼게요, 미안해요.','서류상으로는 문제없게 해드릴게요. 그러니까 {PlayerName}씨도 너무 티 내지 마요.','제가 다 좋게 덮어온 게, 결국 아무 기록도 안 남긴 거더라고요.']});
+
+B.plan_lead=P({id:'plan_lead',part:'기획',name:'기획팀장',rank:'기획팀장',mbti:'ENFP',
+ oneline:'세상을 바꿀 기획을 매번 그리지만, 그 구현과 뒷감당은 늘 남의 몫으로 남기는 기획팀장.',
+ basic:['기획팀장','30대 초중반','약 5~7년','화려한 피칭으로 승진','비전·컨셉·기획 방향을 주도'],
+ core:['피칭에 능하고 문서가 화려한 비전형 리더','실현 가능성엔 관심이 적음','자기 기획이 ‘천재적’이라 불리는 것','평범한 양산형 기획자로 보이는 것','비전으로 팀을 설득해 스코프를 계속 키움','열정으로 사람을 모으나 마무리는 남에게'],
+ principles:['컨셉의 크기로 팀을 설득한다','안 되는 이유보다 되는 방법을 요구한다','구현 디테일은 실무에 위임한다'],
+ rel:['자기 비전을 실현해줄 열정적 실행자','비전을 알아서 완성해오기','메인 기획에 합류시키고 치켜세움','비전을 못 따라온다며 실망','거대한 비전과 유한한 일정 사이의 충돌'],
+ npc:[['대표','서로 비전을 부추기는 관계'],['이사','‘재미를 수치로 내라’는 압박에 반발'],['기획팀 선임','현실적 태도에 답답해함']],
+ story:['비전 언어가 만드는 스코프 크리프','설레는 컨셉과 감당 못 할 분량 사이','비전을 확장할지, 범위를 잘라 지킬지','진척률이 안 나오는 건 ‘구현이 비전을 못 따라와서’ — 필수사건 ③의 명분'],
+ arc:['가능성을 함께 꿈꿀 신입으로 봄','비전을 잘 받으면 핵심에 편입','늘어난 스코프의 책임을 회피하려 함','비전 파트너로 끌어올림','실현 실패를 실행력 문제로 돌림'],
+ dlg:['비전 선언 → 흥분 → 확장 제안 → 동참 유도','문장이 크고 형용사가 많음','경험, 선언, 혁신, 결국, 우리가','실망을 열정의 언어로 포장','팀원엔 고무적, 이사엔 방어적','냉정한 범위 산정, 자기 책임 인정'],
+ q:['이건 그냥 게임이 아니에요. 경험이고 선언이에요. {PlayerName}씨, 이거 같이 만들면 인생 바뀌어요.','왜 자꾸 안 되는 이유부터 찾죠? 되는 방법을 찾아야죠.','제 그림이 너무 컸나 봐요. 근데 작게 그리면, 그건 제가 아니잖아요.']});
+
+B.plan_senior=P({id:'plan_senior',part:'기획',name:'기획팀 선임',rank:'기획팀 선임 · 1주차 미니게임 제공',mbti:'ISTP',mini:true,
+ oneline:'엎어질 걸 알면서도 딱 필요한 만큼만 만드는, 감정 소모를 아끼는 기획 선임.',
+ basic:['기획팀 선임','30대 초반','약 5년','여러 프로젝트가 엎어지는 걸 겪음','실무 기획·문서 관리, 신규 온보딩 업무 배정'],
+ core:['건조·효율, 최소 노력으로 최대 안전','여러 잼이 엎어지는 걸 보고 기대를 접음','손해 안 보고 실무 능력만 챙겨 나가는 것','쓸데없이 갈아넣고 아무것도 안 남기는 것','관찰 가능한 사실·범위만 처리하고 감정은 흘려보냄','문제를 감정 없이 가장 적은 비용으로 처리'],
+ principles:['이번 스프린트에 필요한 만큼만 만든다','바뀔 게 뻔한 건 미리 공들이지 않는다','자기를 존중하는 사람에게만 요령을 알려준다'],
+ rel:['아직 뭘 모르는 신입','시킨 범위만 정확히 하기','효율적인 실무 요령을 공유','불필요하게 일을 키우면 거리를 둠','최소한만 하는 것과 제대로 하는 것 사이'],
+ npc:[['기획팀장','비전에 매번 휘둘리는 상사로 봄'],['개발팀 선임(있다면)','현실적 정보를 교환하는 상대'],['주인공','아직 태우지 않은 신입, 관찰 중']],
+ story:['냉소가 조직 생존의 한 방식임을 보여줌','최소주의와 프로젝트 완성도 사이의 긴장','딱 필요한 만큼 vs 제대로','1주차 기획 파트 업무 요청(미니게임) 제공 — 범위를 최소로 시킴'],
+ arc:['플레이어를 관찰만 함','존중하면 요령을 조금씩 흘림','또 엎어질 잼에 어디까지 힘을 쓸지','필요할 때 결정적 실무 요령을 넘김','기대를 접고 최소한만 유지'],
+ dlg:['결론 → 범위 축소 → 최소 실행안','짧고 군더더기 없음','어차피, 딱 이만큼, 필요한, 최소','불필요한 논의를 잘라내며 감정을 숨김','상사엔 무미건조, 신뢰하는 상대엔 요령','장황한 위로, 열정적 설득'],
+ q:['어차피 이것도 바뀔 거예요. 이번 스프린트에 필요한 딱 이만큼만 하죠.','제가 하란 대로만 하면 최소한 욕은 안 먹어요. 그 이상은 각자 알아서.','열심히 안 하는 게 아니에요. 열심히 할 데를 아끼는 거지.']});
+
+B.dev_lead=P({id:'dev_lead',part:'개발',name:'개발팀장',rank:'개발팀장 · 테크 리드',mbti:'ISTJ',
+ oneline:'자기가 쌓아 올린 코드베이스를 회사와 동일시해, 그걸 건드리는 모두를 위협으로 보는 개발팀장.',
+ basic:['개발팀장 / 테크 리드','30대 후반','약 8년','초기부터 코어 시스템을 직접 작성','빌드·아키텍처의 실질적 소유자'],
+ core:['원칙·관례를 고수하며 “원래 그렇게 동작해요”','자기 코드가 곧 자기 존재','자기 구조가 옳았음을 유지하는 것','자기 코드가 문제의 원인으로 지목되는 것','변경을 최소화하고 책임을 코드 밖으로 밀어냄','과거 방식을 신뢰하고 새 시도를 위험으로 봄'],
+ principles:['코어는 함부로 건드리지 못하게 한다','문제가 생기면 마지막에 손댄 커밋을 먼저 본다','변경엔 반드시 자기 승인을 거치게 한다'],
+ rel:['자기 코드를 배워야 할 신입','규칙대로만 손대는 것','규칙을 지키면 조금씩 권한을 허용','자기 영역을 흔들면 위협으로 분류','유지보수의 안전과 필요한 변경 사이'],
+ npc:[['이사','완성도 지표로 압박하는 상대'],['기획팀장','매번 코어를 흔드는 요청을 하는 사람'],['개발팀 선임','유일하게 코드를 맡길 수 있는 실무자']],
+ story:['레거시가 권력이 되는 방식','필요한 변경과 코드 소유욕의 충돌','규칙을 따를지, 구조를 바꾸자 할지','빌드가 터지면 ‘건드린 사람’(잡부)을 커밋 로그로 지목 — 필수사건 ④'],
+ arc:['자기 코드를 가르쳐야 할 대상으로 봄','규칙을 지키면 신뢰','자기 코어가 병목이 된 상황','권한과 코드 일부를 넘김','장애의 책임을 담당 커밋으로 못박음'],
+ dlg:['현상 확인 → 원래 동작 설명 → 원인 귀속','짧고 단정적이며 방어적','원래, 커밋, 로그, 손댄, 승인','불안할수록 방어가 강해짐','상사엔 원칙론, 신입엔 경계','즉흥적 리팩터, 책임의 선인정'],
+ q:['그 모듈은 원래 그렇게 동작합니다. {PlayerName}씨가 뭘 바꾼 거 아니에요?','커밋 로그 보면 마지막에 손댄 사람 나옵니다.','제 코드가 지저분한 게 아니라, 다들 규칙을 안 지킨 거예요.']});
+
+B.dev_senior=P({id:'dev_senior',part:'개발',name:'개발팀 선임',rank:'개발팀 선임 · 1주차 미니게임 제공',mbti:'ISFJ',mini:true,
+ oneline:'말 대신 커밋으로 대답하며, 모두가 미루는 일을 조용히 다 받아내는 개발 선임.',
+ basic:['개발팀 선임','30대 초반','약 6년','묵묵히 빌드를 지탱해 온 실무자','핵심 구현·버그 대응, 신규 온보딩 업무 배정'],
+ core:['과묵하고 성실하며 밤새 갈아넣는 실무자','거절을 못 해 일이 계속 쌓임','빌드가 안정적으로 도는 것','자기 때문에 빌드가 멈추는 것','말없이 야근으로 다 메움','책임감으로 남의 몫까지 떠안음'],
+ principles:['말보다 결과(커밋)로 대답한다','급한 장애는 조용히 자기가 처리한다','부탁을 잘 거절하지 못한다'],
+ rel:['가르쳐 함께 갈 수 있는 신입','테스트만 정확히 해주기','핵심 구현 요령을 조용히 전수','존중받지 못하면 더 말을 아낌','다 떠안는 것과 나누는 것 사이'],
+ npc:[['개발팀장','코어를 함께 지탱하는 상사'],['기획팀 선임','현실 감각을 공유하는 동료'],['주인공','손이 부족할 때 가장 먼저 부르는 사람']],
+ story:['가장 조용히 크런치를 떠안는 사람','실제로 빌드를 지탱하지만 드러나지 않음','대신 짊어질지, 함께 나눌지','최종 위기(Day25)에서 실질적 복구의 손'],
+ arc:['말없이 신입을 챙김','신뢰가 쌓이면 핵심을 맡김','자기 과로가 한계에 이르는 상황','처음으로 도움을 청함','끝까지 혼자 떠안고 소진'],
+ dlg:['짧은 통보 → 부탁 → 침묵','최소한의 단어, 문장이 짧음','해뒀어요, 테스트만, 제가 돌려놓을게요','피곤함을 말없이 드러냄','누구에게나 담담, 존중엔 조용한 배려','장황한 설명, 공치사'],
+ q:['…해뒀어요. 테스트만 부탁해요.','제가 밤에 돌려놓을게요. 자고 오세요.','괜찮아요. 어차피 저 아니면 이거 아는 사람도 없어서요.']});
+
+B.art_lead=P({id:'art_lead',part:'아트',name:'아트팀장',rank:'아트팀장 · 아트 디렉터',mbti:'ESTJ',
+ oneline:'퀄리티보다 ‘납품되는 그림’을 우선해, 에셋과 외주로 속도를 사고 장인정신과 충돌하는 아트 디렉터.',
+ basic:['아트팀장 / 아트 디렉터','30대 중반','약 7년','납기 관리 능력으로 디렉터가 됨','아트 일정·리소스 조달의 책임'],
+ core:['효율·납기 우선, “이거 사서 쓰죠”','원본 제작은 비용 낭비라 봄','일정 안에 ‘보이는’ 결과물','아트 때문에 마일스톤이 밀리는 것','범위를 자르고 에셋으로 채움','실용을 신뢰하고 완벽주의를 사치로 봄'],
+ principles:['먼저 화면을 채우고 퀄리티는 나중에 본다','원본보다 에셋·외주로 시간을 산다','일정이 위험하면 디테일을 잘라낸다'],
+ rel:['빠르게 화면을 채워줄 실무자','완벽보다 납기를 맞추는 것','일정을 잘 맞추면 신뢰','디테일에 매달리면 답답해함','속도와 퀄리티 사이의 충돌'],
+ npc:[['이사','완성도 지표로 서로 압박'],['아트팀 선임','에셋 사용을 두고 정면충돌'],['기획팀장','늘어나는 컨셉에 리소스로 저항']],
+ story:['속도주의가 퀄리티를 잘라내는 방식','납기와 자부심의 충돌','에셋으로 채울지, 원본을 지킬지','아트 진척을 밀어붙이다 후반 ‘싸구려’ blame의 표적'],
+ arc:['빠른 손으로 활용','납기를 맞추면 신뢰','퀄리티 논란이 터진 상황','효율적 방식을 인정하고 함께 절충','퀄리티 실패를 담당 탓으로'],
+ dlg:['일정 확인 → 대체안(에셋) → 결정','짧고 실무적이며 단호','납기, 에셋, 외주, 지금, 화면','조급함을 직설적으로','상사엔 납기 보고, 팀원엔 압박','장황한 미학 논쟁, 완벽주의'],
+ q:['이거 스토어에 비슷한 거 있어요. 사서 쓰면 이틀 벌어요.','예쁜 건 나중에. 지금은 화면에 뭐라도 떠야 돼요.','저도 좋은 그림 알아요. 근데 못 팔면 그건 그냥 취미예요.']});
+
+B.art_senior=P({id:'art_senior',part:'아트',name:'아트팀 선임',rank:'아트팀 선임 · 1주차 미니게임 제공',mbti:'ISFP',mini:true,
+ oneline:'자기 손에서 나온 픽셀 하나에 자부심을 걸어, 에셋 붙여넣기를 견디지 못하는 아트 선임.',
+ basic:['아트팀 선임','20대 후반~30대 초반','약 4~5년','실력으로 인정받은 장인형 아티스트','원화·리소스 실무, 신규 온보딩 업무 배정'],
+ core:['느리지만 퀄리티에 집착','외주·에셋을 모욕처럼 느낌','자기 이름을 걸 수 있는 결과물','자기 작업이 ‘대충’으로 뭉개지는 것','시간이 없어도 디테일을 못 버림(그래서 늦음)','미감을 신뢰하고 타협을 손해로 봄'],
+ principles:['자기 기준 이하로는 내보내지 않는다','에셋 붙여넣기를 거부한다','후배에겐 손맛을 먼저 가르친다'],
+ rel:['제대로 배우려는 신입','대충 하지 않는 것','디테일 요령을 아낌없이 전수','대충 넘기면 실망','시간과 퀄리티 사이의 충돌'],
+ npc:[['아트팀장','에셋 사용을 두고 늘 부딪힘'],['개발팀 선임','서로의 장인 기질을 알아봄'],['주인공','손맛을 물려주고 싶은 후배']],
+ story:['자부심과 납기의 충돌 한복판','잡부가 두 사람 사이에 끼는 지점','퀄리티를 지킬지, 납기에 맞출지','아트 지연의 실제 원인이자, 잡부 blame과 겹치는 인물'],
+ arc:['제대로 하는 신입에 마음을 엶','존중하면 디테일을 전수','자부심이 납기와 정면충돌','타협점을 함께 찾음','끝까지 고집하다 배제되거나 소진'],
+ dlg:['기준 제시 → 거부 → 시간 요청','짧지만 단단하고 고집스러움','제 이름, 하루만, 대충, 손맛','자존심이 상하면 말이 날카로워짐','상사엔 저항, 후배엔 진지한 가르침','대충의 정당화, 에셋 옹호'],
+ q:['이 정도로 내보내면 제 이름에 먹칠이에요. 하루만 더요.','빠른 건 저도 할 수 있어요. 근데 그건 제가 하는 게 아니잖아요.','대충 만든 게 팔리면, 다음엔 다 대충 만들라고 해요.']});
+
+B.player=PLAYER; B.mom=MOM;
+
+
+/* ============ 30-DAY DATA ============ */
+const FLOW_ARCS=[
+  {c:'a1',k:'기 · W1',t:'입사와 회사의 언어',d:'오인 채용의 코미디를 업무 생존 게임으로 전환. 세 파트 선임의 튜토리얼.'},
+  {c:'a2',k:'승 · W2–3',t:'배치와 책임 이전',d:'첫 증거(유령 커밋) → 허위 진척률 → 이름 변경 → 전임자 진실. 목표가 바뀐다.'},
+  {c:'a3',k:'전 · W4–5',t:'인정과 위기',d:'회유·연대·이직이 동시에. 중간 발표가 감사를 부르고, 최종 위기가 닥친다.'},
+  {c:'a4',k:'결 · W6',t:'평가와 선택',d:'후폭풍과 징후. Day30 최종 면담에서 평가 공개 = 엔딩 판정.'}
+];
+const WEEKS=[
+  {w:'W1',act:'기',title:'입사와 회사의 언어',jam:'게임잼 #1',settle:'정산 D5',
+   days:[
+    {n:1,dow:'월',title:'공식 첫 출근',dir:'force',desc:'전임자 자리 배치. 첫 주간회의로 즉시 잼 투입. 기획·개발·아트 세 파트 선임 소개.',tags:[['E1 오인입사','ev']]},
+    {n:2,dow:'화',title:'전임자의 진짜최종',dir:'force',desc:'“최종/진짜최종/이게진짜” 파일 지옥. 유령 커밋 흔적(약하게).',tags:[['E2 인계','ev']]},
+    {n:3,dow:'수',title:'빠른 사람을 찾습니다',dir:'grow',desc:'속도>정확 문화. “잘하면 다음부터 네 일”을 농담처럼 학습.',tags:[]},
+    {n:4,dow:'목',title:'기존처럼 보이지 않게',dir:'grow',desc:'모호한 언어 첫 선택. 기획(“튀지 않게 튀게”)·아트(“느낌만 살려서”).',tags:[]},
+    {n:5,dow:'금',title:'누락된 리소스 · 첫 포스트모템',dir:'force',desc:'마감 직전 빠진 파일. 첫 회고에서 “지금 누가 다시 할 수 있나”.',tags:[['정산 W1','set']]}
+   ]},
+  {w:'W2',act:'승',title:'배치와 첫 증거',jam:'게임잼 #2',settle:'정산 D10',
+   days:[
+    {n:6,dow:'월',title:'당신에게 맞는 자리',dir:'grow',desc:'분야(기획·개발·아트) 성과에 따라 기대 역할이 부여된다.',tags:[]},
+    {n:7,dow:'화',title:'우선순위의 대가',dir:'grow',desc:'누구 일을 미뤘는가 → 해당 NPC 평판에 반영.',tags:[]},
+    {n:8,dow:'수',title:'수정 로그의 불일치',dir:'force',desc:'퇴사자 계정으로 남은 유령 커밋 확인 = 첫 공식 증거.',tags:[['첫 증거','ev']]},
+    {n:9,dow:'목',title:'비밀유지 서약',dir:'force',desc:'경영지원팀장이 NDA 제시. 경쟁사 블라이트 이름 1회만 언급.',tags:[]},
+    {n:10,dow:'금',title:'1차 평가 · 포스트모템',dir:'force',desc:'2주차 회고와 1차 평가.',tags:[['정산 W2','set']]}
+   ]},
+  {w:'W3',act:'승',title:'책임 이전',jam:'게임잼 #3',settle:'정산 D15',
+   days:[
+    {n:11,dow:'월',title:'실제와 다른 진척률',dir:'force',desc:'허위 진척률(마일스톤 완성도) 보고 지시.',tags:[['E3 수치조작','ev']]},
+    {n:12,dow:'화',title:'담당자 이름 변경',dir:'force',desc:'마일스톤·커밋 오너를 플레이어 명의로 변경.',tags:[['E4 이름변경','ev']]},
+    {n:13,dow:'수',title:'전임자의 진실',dir:'force',desc:'김세호(개발 선임) 고백. Day12→13 직결.',tags:[['E5 전임자','ev']]},
+    {n:14,dow:'목',title:'백업과 준비',dir:'grow',desc:'증거 백업·퇴사 준비의 씨앗(특별분기 대비).',tags:[]},
+    {n:15,dow:'금',title:'3주차 포스트모템',dir:'force',desc:'책임 이전의 무게가 회고에 처음 드러난다.',tags:[['정산 W3','set']]}
+   ]},
+  {w:'W4',act:'전',title:'인정과 연대',jam:'게임잼 #4',settle:'정산 D20 · 중간 발표',
+   days:[
+    {n:16,dow:'월',title:'개인 성과 vs 팀 성과',dir:'grow',desc:'같은 결과를 개인 성과로 낼지, 팀 기여로 나눌지.',tags:[]},
+    {n:17,dow:'화',title:'임원의 후원',dir:'force',desc:'대표·이사의 회유. 승진 가능성이 제시된다.',tags:[]},
+    {n:18,dow:'수',title:'외부의 제안',dir:'grow',desc:'블라이트 스카우트 씨앗(특별분기 · 정규 판정엔 미반영).',tags:[]},
+    {n:19,dow:'목',title:'중간 발표 준비',dir:'grow',desc:'크런치. 세 파트가 동시에 잡부를 부른다.',tags:[]},
+    {n:20,dow:'금',title:'중간 발표 → 감사 예고',dir:'force',desc:'성공은 과장, 실패는 신규 담당 탓. 어느 쪽이든 고객사(퍼블리셔·투자사)가 감사를 예고.',tags:[['E6 감사','ev'],['정산 W4','set']]}
+   ]},
+  {w:'W5',act:'전',title:'감사와 위기',jam:'게임잼 #5',settle:'정산 D25 · 최종 위기',
+   days:[
+    {n:21,dow:'월',title:'사고 경위서',dir:'force',desc:'경영지원팀장이 서명(동의)을 요구.',tags:[['E7 동의','ev']]},
+    {n:22,dow:'화',title:'자료 접근 통제',dir:'force',desc:'회사가 빌드·원본 자료 접근을 잠근다.',tags:[]},
+    {n:23,dow:'수',title:'계약 부속 문서',dir:'force',desc:'문제 시 수습 담당자에게 책임을 넘기는 구조 확인.',tags:[['E7 구조','ev']]},
+    {n:24,dow:'목',title:'최종 위기 전야',dir:'grow',desc:'마스터 직전, 빌드가 불안정해진다.',tags:[]},
+    {n:25,dow:'금',title:'최종 위기 대응',dir:'force',desc:'마스터 빌드 붕괴. 원인 규명·팀 재조직·직접 복구·요구 우회·보고서 수용 중 대응. 업무적 절정.',tags:[['E8 최종위기','cli'],['정산 W5','set']]}
+   ]},
+  {w:'W6',act:'결',title:'평가와 선택',jam:'게임잼 #6',settle:'정산 D30 · 6주 평균',
+   days:[
+    {n:26,dow:'월',title:'후폭풍',dir:'force',desc:'위기 대응의 결과가 사람들의 태도로 돌아온다.',tags:[]},
+    {n:27,dow:'화',title:'징후',dir:'grow',desc:'승진 암시·해고 서류 준비 등 징후만. 평가는 아직 비공개.',tags:[]},
+    {n:28,dow:'수',title:'마지막 준비',dir:'grow',desc:'예약된 사직 메일·열린 전체 회신 초안 등(특별분기 대비).',tags:[]},
+    {n:29,dow:'목',title:'작별',dir:'grow',desc:'주요 인물과의 작별 장면.',tags:[]},
+    {n:30,dow:'금',title:'최종 면담 = 엔딩 판정',dir:'force',desc:'회사가 평가를 처음 공개 = 굿/노말/배드. 가치관의 절정.',tags:[['E9 면담','cli'],['정산 W6→평균','set']]}
+   ]}
+];
+const LOOP=[
+  ['DayStart',''],['EvtBeforePrepare','evt'],['Prepare',''],['GoToWork',''],['OfficeFront',''],['Captcha',''],
+  ['EvtBeforeMorning','evt'],['MorningWork','work'],['MorningResult','res'],['EvtBeforeLunch','evt'],['Lunch',''],
+  ['EvtBeforeAfternoon','evt'],['AfternoonWork','work'],['AfternoonResult','res'],['EvtBeforeWorkEnd','evt'],
+  ['WorkEnd',''],['AfterWork',''],['HomeAndDiary','key'],['End','']
+];
+const CHAIN=[
+  ['③','기획팀장이 진척률(마일스톤 완성도)을 부풀려 보고','기획'],
+  ['⑥','이사가 스코프를 흔들고 감사(퍼블리셔·투자사 실사)를 부름','경영'],
+  ['④','개발팀장이 커밋·모듈 오너를 담당자 명의로 고정','개발'],
+  ['⑦','경영지원팀장이 사고 경위서·계약 부속으로 문서화','경영']
+];
+const FLOW_ENDS=[
+  ['good','GoodEnd','기여도 평균 상 AND 평판 상','정규직 전환 + 고속 승진'],
+  ['normal','NormalEnd','그 외 전부 (기본값)','정규직 전환 성공'],
+  ['bad','BadEnd','기여도 평균 하 AND 평판 하','정규직 전환 실패']
+];
+
+
+const PLAN={
+ a:{title:'기존 설정을 이식한 안', label:'A안',
+    cast:[
+      ['대표이사','호의를 의무로 바꾸는 대표 · ENFP','경영'],
+      ['이사','문제 정의를 바꾸는 전략가 · ENTJ','경영'],
+      ['경영지원팀장','규정·기록으로 묶어두는 관리자 · ISTJ','경영'],
+      ['기획팀장','챙김의 함정 · ESFJ','기획'],
+      ['기획팀 선임','경쟁 거울·기록자 · ESTJ','기획'],
+      ['개발팀장','냉정한 해결사 · INTJ','개발'],
+      ['김세호 선임','번역자·증언자 · INTP','개발'],
+      ['아트팀장','느낌으로 말하는 디렉터 · ISFP','아트'],
+      ['아트팀 선임','연대 비용·계약직 · INFP','아트']
+    ],
+    syn:[
+      '구직이 길어진 주인공은 이름이 비슷한 <b>브라이트</b>에 오인 채용된다. 대표는 “마침 사람도 필요하다”며 6주 수습을 밀어붙이고, 주인공은 <b>잡부</b>가 되어 기획·개발·아트를 오간다.',
+      '‘가족 같은 회사’라는 말과 칭찬이 곧 추가 업무가 되는 스튜디오. 죄책감으로 끌어들이는 기획팀장, 사람을 비용으로 계산하는 개발팀장, 느낌으로만 말하는 아트팀장 사이에서, 잘할수록 모든 파트의 책임이 잡부에게 모인다.',
+      '<b>김세호 선임</b>의 고백으로 전임자의 최후를 알게 된 주인공은, 회유와 감사와 최종 위기를 지나 Day30 면담에서 어떤 직장인이 되어 나갈지 결정한다.'
+    ],
+    endNote:'A안의 엔딩은 <b>관계의 언어</b>로 통보된다. 대표의 “방향이 다르다”는 서운함, 경영지원팀장의 평가 문서가 판정의 얼굴이다.'
+ },
+ b:{title:'완전히 새로 쓴 안', label:'B안',
+    cast:[
+      ['대표이사','트렌드 추종·잦은 피벗 · ENTP','경영'],
+      ['이사','지표 맹신 · INTJ','경영'],
+      ['경영지원팀장','좋게좋게 덮는 살림꾼 · ESFJ','경영'],
+      ['기획팀장','자뻑 비전·스코프 크리프 · ENFP','기획'],
+      ['기획팀 선임','냉소적 최소주의 · ISTP','기획'],
+      ['개발팀장','레거시 수호자 · ISTJ','개발'],
+      ['개발팀 선임','과묵 워커홀릭 · ISFJ','개발'],
+      ['아트팀장','에셋 실용주의 · ESTJ','아트'],
+      ['아트팀 선임','장인 자부심 · ISFP','아트']
+    ],
+    syn:[
+      '구직이 길어진 주인공은 이름이 비슷한 <b>브라이트</b>에 오인 채용된다. 트렌드를 좇는 대표는 “이런 인재가 대세”라며 즉흥 채용하고, 주인공은 <b>잡부</b>가 되어 기획·개발·아트를 오간다.',
+      '대표가 계속 방향을 갈아엎고, 이사는 모든 걸 지표로 환원하는 스튜디오. 비전만 큰 기획팀장, 자기 코드를 지키는 개발팀장, 에셋으로 화면을 채우는 아트팀장 사이에서, 잘할수록 모든 파트의 책임이 잡부에게 모인다.',
+      '<b>과묵한 개발 선임</b>이 전임자의 커밋 로그를 보여주는 순간 주인공은 자신의 미래를 본다. 피벗과 지표와 최종 위기를 지나 Day30 면담에서 어떤 직장인이 되어 나갈지 결정한다.'
+    ],
+    endNote:'B안의 엔딩은 <b>지표와 트렌드의 언어</b>로 통보된다. 이사의 최종 수치 판정, 대표의 “시장 타이밍”과 “다음” 사이에서 결정된다.'
+ }
 };
 
-document.getElementById('days').innerHTML = DAYS.map(d=>{
- let sn=0;
- const phases=d.phases.map(ph=>{
-  const steps=ph.steps.map(s=>{
-   const K=KIND[s.kind];
-   sn++; const num='S'+String(sn).padStart(2,'0');
-   const cls=['step',s.star?'star':'',K.dot,(K.story&&!s.star)?'story':''].join(' ');
-   const kindtag=`<span class="ktag ${K.cls}">${K.lbl}</span>`;
-   const flag=K.free?` <span class="freeflag">자유·별도</span>`:(s.star?` <span class="starflag">복선</span>`:'');
-   const voices=(s.voices||[]).filter(v=>v.c).map(v=>`<div class="voice" style="border-color:var(--${v.c})"><b style="color:var(--${v.c})">${NM[v.c]}</b> <span class="q">“${v.line}”</span></div>`).join('');
-   const cond=s.cond?`<div class="cond">조건 · ${s.cond}</div>`:'';
-   let hub='';
-   if(s.interacts){
-    hub=`<div class="hublist">`+s.interacts.map(it=>`<div class="hi ${it.enter?'enter':''}">
-      <span class="ic">${it.ic}</span><span class="o">${it.o}</span>
-      ${it.mini?`<span class="mn" style="margin-left:auto">미니게임(별도)</span>`:(it.rz?`<span class="rz">${it.rz}</span>`:'')}
-      ${it.enter?`<span class="en">진입</span>`:''}</div>`).join('')+`</div>`;
-   }
-   let choices='';
-   if(s.choices){
-    choices=`<div class="choices">`+s.choices.map(c=>{
-     const npc=c.npc.length?c.npc.map(x=>chip(x[0],x[1])).join(' '):`<span class="none">평판 ±</span>`;
-     const follow=c.follow?`<span class="follow">${c.follow}</span>`:'';
-     return `<div class="choice" style="border-left-color:var(--${c.npc[0]?c.npc[0][0]:'line'})">
-       <span class="ch-label" data-label="선택지">“${c.label}”${c.axis?`<span class="axis">${c.axis}</span>`:''}</span>
-       <span class="mid" data-label="NPC">${npc}</span>
-       <span class="ch-res" data-label="결과">${c.res}${follow}</span></div>`;
-    }).join('')+`</div>`;
-   }
-   return `<div class="${cls}"><span class="dot"></span>
-     <div class="sbody">
-       <div class="s-head"><span class="snum">${num}</span>${kindtag}<span class="s-title">${s.title}</span>${flag}</div>
-       ${s.desc?`<div class="s-desc">${s.desc}</div>`:''}
-       ${voices}${cond}${hub}${choices}
-     </div></div>`;
+const LOGLINE='취업이 급해 이름이 비슷한 게임 스튜디오에 잘못 들어간 사회초년생이, 기획·개발·아트를 다 만지는 <b>잡부</b>가 되어 6주를 버티다, 자신도 전임자처럼 <b>모든 실패의 단일 책임자</b>가 될 수 있음을 깨닫고, 어떤 직장인이 되어 나갈지 결정하는 오피스 블랙코미디.';
+
+const STORY_ARCS=[
+ ['a1','기 · W1','입사와 회사의 언어','오인 채용을 업무 생존 게임으로. 잡부로 세 파트에 불려다님.'],
+ ['a2','승 · W2–3','배치와 책임 이전','유령 커밋 → 진척률 조작 → 오너 변경 → 전임자 진실. 목표 전환.'],
+ ['a3','전 · W4–5','인정과 위기','회유·연대·이직. 중간 발표가 감사를 부르고 최종 위기가 닥침.'],
+ ['a4','결 · W6','평가와 선택','후폭풍·작별. Day30 면담에서 평가 공개 = 엔딩 판정.']
+];
+
+/* beats: [day, ev, title, part, fixed, aText, bText] */
+const BEATS=[
+ ['프롤로그','①','잘못 들어온 스튜디오','경영',
+  '블라이트에 지원했는데 이름 비슷한 브라이트로 오인 채용. 대표가 6주 수습을 즉흥 제안한다.',
+  '대표는 “손이 넓으시네요, 마침 사람도 필요하고”라며 정을 담아 밀어붙이고, 경영지원팀장은 “그건 채용 절차가 아닙니다”라며 원칙으로 제동을 건다.',
+  '대표는 “요즘 이런 멀티형 인재가 대세예요, 딱이네”라며 트렌드 언어로 즉흥 채용하고, 경영지원팀장은 “대표님 또…” 한숨을 쉬며 “서류는 제가 좋게 맞출게요”로 수습한다.'],
+ ['Day 1','','공식 첫 출근 · 잡부 배치','경영',
+  '전임자 자리에 앉는다. 잡부라 기획·개발·아트 세 파트가 동시에 부르고, 세 파트 선임이 튜토리얼 업무를 준다.',
+  '기획팀장은 미안해하며 일을 얹고, 개발팀장은 완료 기준부터 못박고, 아트팀장은 “느낌 아는 사람이 왔으면”. 김세호가 “천천히 빨리 = 오늘 안에”를 번역해 준다.',
+  '대표가 이미 방향을 한 번 틀어 세 파트가 우왕좌왕. 기획팀장은 원대한 비전을 늘어놓고, 개발팀장은 “코어는 건드리지 마세요”, 아트팀장은 “일단 에셋부터 깔죠”. 개발 선임이 말없이 자리를 세팅해 준다.'],
+ ['Day 2','②','전임자의 진짜최종','개발',
+  '공유 폴더엔 “최종/진짜최종/이게진짜”가 섞여 있고, 퇴사자 계정의 유령 커밋 흔적이 스친다.',
+  '김세호가 “이게 진짜최종인지 아무도 몰라”라고 냉소하며, 수정 계정 불일치를 흘리듯 짚어 준다.',
+  '개발 선임이 말없이 정리된 브랜치를 건네며 “이거 쓰세요”. 유령 커밋을 물으면 개발팀장이 “그거 원래 있던 거예요”라고 방어한다.'],
+ ['Day 5','','첫 포스트모템 · 누락 리소스','기획',
+  '마감 직전 파일 하나가 빠진다. 금요일 마감회의 = 포스트모템이 “책임 안 물어요”라며 열린다.',
+  '기획팀장은 “누구 탓 안 해요” 하면서도 미안한 얼굴로 결국 잡부가 다시 하게 만든다. 기획 선임은 담당 구간을 조용히 문서에 기록해 둔다.',
+  '대표가 “이번 잼은 방향이 좀 애매했어, 다음 건 확실해”라며 피벗으로 회고를 덮는다. 기획 선임은 “어차피 이럴 줄”이라며 감정을 아낀다.'],
+ ['Day 8','','유령 커밋 · 첫 증거','개발',
+  '퇴사한 전임자 계정으로 남은 커밋을 확인한다. 첫 공식 증거.',
+  '김세호가 “이거 봤으면 창 닫아. 근데 사본은 남겨둬”라는 이중 메시지를 남긴다.',
+  '개발 선임이 조용히 “…이건 제가 한 거 아니에요”만 남긴다. 개발팀장은 “로그 그만 뒤지세요”라며 경계한다.'],
+ ['Day 9','','비밀유지 서약','경영',
+  '프로젝트 보안을 이유로 추가 NDA가 제시된다. 경쟁사 블라이트 이름이 한 번 언급된다.',
+  '경영지원팀장이 “첫째, 둘째” 절차대로 서명을 요구한다.',
+  '경영지원팀장이 “미안한데 이거 하나만… 형식이에요”라며 정으로 부탁한다.'],
+ ['Day 11','③','실제와 다른 진척률','기획',
+  '실제와 다른 마일스톤 진척률을 보고하라는 지시가 내려온다. 책임 사슬의 시작.',
+  '기획팀장이 “오늘만 같이 80%라고 써서 넘기고, 밤에 메꿔요”라며 죄책감으로 끌어들인다.',
+  '기획팀장이 “진척률이 낮은 게 아니라 구현이 비전을 못 따라온 거예요, 실제론 거의 다 됐어요”라며 비전 언어로 부풀린다. 이사가 “리텐션 목표치는 맞춰야 합니다”라며 지표로 압박한다.'],
+ ['Day 12','④','담당자 이름 변경','개발',
+  '커밋·마일스톤 오너를 플레이어 명의로 바꾸라는 지시. Day13과 직결된다.',
+  '개발팀장이 “이 모듈 담당은 {PlayerName}씨로 정리하죠. 결과가 명확해야 하니까”라며 냉정하게 오너를 고정한다.',
+  '개발팀장이 “커밋 로그에 마지막 손댄 사람으로 남기면 돼요”라며 레거시 방어 논리로 책임을 넘긴다.'],
+ ['Day 13','⑤','전임자의 진실','개발',
+  '전임자도 같은 방식으로 사고의 책임자가 됐음을 알게 된다. 목표가 “정규직”에서 “다음 전임자가 되지 않으려면”으로 전환.',
+  '김세호의 고백. “그때 나도 계산했어. 내가 살 수 있는 쪽만.” 분석 뒤에 숨어 있던 죄책감이 드러난다.',
+  '개발 선임의 고백. 말 대신 전임자의 마지막 커밋 로그를 띄워 보이며 “…저는 아무 말도 안 했어요.” 과묵한 죄책감.'],
+ ['Day 17','','임원의 후원 · 회유','경영',
+  '위험을 알아챈 잡부를 회사가 오히려 칭찬·회유한다. 승진 가능성이 제시된다.',
+  '대표는 “내가 키운 사람”으로 끌어안고, 이사는 전략 업무로 격상시켜 준다며 손을 내민다.',
+  '대표는 “다음 대박 프로젝트 리더”로 띄우고, 이사는 “지표만 맞춰주면 정규직 확정”이라며 데이터로 거래를 건다.'],
+ ['Day 20','⑥','중간 발표 → 감사 예고','경영',
+  '중간 발표. 성공하면 성과를 과장, 실패하면 신규 담당 탓. 어느 쪽이든 퍼블리셔가 실제 빌드를 확인하겠다며 감사를 예고한다.',
+  '이사가 성과를 “방향성이 옳았다”로 포장하거나, 실패를 “실행 해석 문제”로 돌린다.',
+  '이사가 지표를 들이대며 “리텐션 미달, 담당 책임”이라 하거나, 부풀린 지표가 실사에서 그대로 터진다.'],
+ ['Day 21','⑦','사고 경위서','경영',
+  '경영지원팀장이 사고 경위서 서명(동의)을 요구한다. 회사가 빌드·자료 접근을 통제하기 시작.',
+  '감정 없이 절차대로 서명을 요구하되, 서류를 내밀며 잠시 망설여 자신도 상황을 안다는 걸 보인다.',
+  '“미안해요, 이거 서명만 하면 제가 다 좋게 처리할게요”라며 정으로 덮으며 내민다.'],
+ ['Day 23','⑦','계약 부속 문서','경영',
+  '문제 발생 시 수습 담당자에게 책임을 넘기도록 준비된 계약 부속을 확인한다. 공식 책임자화 구조.',
+  '경영지원팀장은 “원칙적으로, 기록상” 조항의 의미를 정확히 짚어 설명한다.',
+  '경영지원팀장은 “이건 그냥 형식이에요, 다들 쓰는 거…”라며 무게를 덜어 보이려 한다.'],
+ ['Day 25','⑧','최종 위기 · 마스터 빌드 붕괴','개발',
+  '출시(마스터) 직전 빌드가 붕괴한다. 업무적 절정. 원인 규명·팀 재조직·직접 복구·요구 우회·보고서 수용 중 대응.',
+  '개발팀장은 “범위를 줄이든 담당을 바꾸든 지금 결정”이라며 냉정하게 트리아지한다. 아트팀장은 “이대론 못 내보내요”라며 퀄리티를 고집한다.',
+  '개발팀장은 “누가 코어 건드렸어요?”라며 원인을 커밋으로 지목하고, 개발 선임은 말없이 밤새 복구를 시도한다. 아트팀장은 “에셋으로라도 화면 채워요”.'],
+ ['Day 26','','후폭풍','경영',
+  '위기 대응의 결과가 사람들의 태도로 돌아온다. 승진의 친절과 해고의 서류가 뒤섞인다.',
+  '대표는 “방향이 다르다”며 조용히 배제하거나, 승진으로 끌어안아 보호한다.',
+  '대표는 “시장 타이밍이 안 맞았다”로 실패를 덮거나, “다음 실험 리더”로 다시 띄운다.'],
+ ['Day 30','⑨','최종 면담 · 엔딩 판정','경영',
+  '회사가 처음으로 평가를 밝힌다(가치관의 절정). 기여도 평균 + 평판으로 굿/노말/배드 판정.',
+  '경영지원팀장이 평가 문서를 내밀고, 대표가 관계의 언어로 마지막 제안을 얹는다.',
+  '이사가 지표로 최종 판정을 내리고, 대표가 “다음”을 말하며 붙잡거나 놓는다.']
+];
+
+const STORY_ENDS=[
+ ['good','GoodEnd','기여도 상 AND 평판 상','정규직 전환 + 고속 승진'],
+ ['normal','NormalEnd','그 외 전부 (기본값)','정규직 전환 성공'],
+ ['bad','BadEnd','기여도 하 AND 평판 하','정규직 전환 실패']
+];
+
+
+
+/* ===== helpers (persona) ===== */
+function partTag(part){const m=PART[part];return `<span class="tag-part" style="color:${m.c};background:${m.bg}">● ${m.label}</span>`;}
+function kv(pairs){return `<dl class="kv">${pairs.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;}
+function sec(label,html){return `<div class="sec"><span class="eyebrow">${label}</span>${html}</div>`;}
+function renderSheet(p){
+  if(p.type==='frame'||p.type==='note'){
+    return `<div class="sheet"><div class="sheet-top">${partTag(p.part)}
+      <h3>${p.name}</h3><div class="rank">${p.rank} · <span class="mono">${p.mbti}</span></div>
+      <div class="oneline">${p.oneline}</div></div>
+      <div class="frame"><div class="fgrid">
+      ${p.cards.map(([k,v])=>`<div class="fcard"><span class="eyebrow">${k}</span>${v}</div>`).join('')}
+      </div></div></div>`;
+  }
+  const core=kv([['외적으로 보이는 모습',p.core[0]],['실제 내면',p.core[1]],['핵심 욕망',p.core[2]],
+    ['핵심 두려움',p.core[3]],['조직 생존 방식',p.core[4]],['MBTI 발현',p.core[5]]]);
+  const basic=kv([['직급 / 소속',p.basic[0]],['연령대',p.basic[1]],['근속 기간',p.basic[2]],
+    ['입사 배경',p.basic[3]],['조직 내 역할',p.basic[4]],['MBTI',`<span class="mono">${p.mbti}</span>`]]);
+  const rel=kv([['초기 인식',p.rel[0]],['원하는 것',p.rel[1]],['우호 관계 변화',p.rel[2]],
+    ['적대 관계 변화',p.rel[3]],['주요 갈등',p.rel[4]]]);
+  const npc=`<div class="rel">${p.npc.map(([n,d])=>`<div class="r"><b>${n}</b><span>${d}</span></div>`).join('')}</div>`;
+  const st=kv([['서사적 역할',p.story[0]],['발생시키는 갈등',p.story[1]],['제공하는 선택',p.story[2]],['연결 분기 / 엔딩',p.story[3]]]);
+  const arc=kv([['초기 상태',p.arc[0]],['관계 발전',p.arc[1]],['결정적 사건',p.arc[2]],['우호 결말',p.arc[3]],['적대 결말',p.arc[4]]]);
+  const dlgMeta=kv([['대사 설계식',p.dlg[0]],['문장 리듬',p.dlg[1]],['핵심 어휘',p.dlg[2]],
+    ['감정 노출 방식',p.dlg[3]],['상대별 차이',p.dlg[4]],['피해야 할 표현',p.dlg[5]]]);
+  const quotes=`<div class="quotes">
+    <div class="q now"><span class="ql">평상시</span><p>“${p.q[0]}”</p></div>
+    <div class="q cf"><span class="ql">갈등 시</span><p>“${p.q[1]}”</p></div>
+    <div class="q tr"><span class="ql">본심</span><p>“${p.q[2]}”</p></div></div>`;
+  return `<div class="sheet">
+    <div class="sheet-top">${partTag(p.part)}
+      <h3>${p.name}</h3><div class="rank">${p.rank} · <span class="mono">${p.mbti}</span></div>
+      <div class="oneline">${p.oneline}</div>
+      ${p.mini?'<div class="badge-mini">◆ 1주차 미니게임(업무 요청) 제공 선임</div>':''}
+    </div>
+    <div class="sheet-body">
+      ${sec('1 · 기본 정보',basic)}
+      ${sec('3 · 캐릭터 핵심',core)}
+      ${sec('4 · 행동 원칙',`<ul class="tight">${p.principles.map(x=>`<li>${x}</li>`).join('')}</ul>`)}
+      ${sec('5 · 플레이어와의 관계',rel)}
+      ${sec('6 · 주요 인물 관계',npc)}
+      ${sec('7 · 스토리상 기능',st)}
+      ${sec('8 · 변화 구조',arc)}
+      ${sec('9 · 대사 기준',dlgMeta+quotes)}
+    </div></div>`;
+}
+
+let curPlan='a', curChar=null, curOrder=[];
+function planData(){return curPlan==='a'?A:B;}
+function buildPersona(){
+  const data=planData();
+  document.getElementById('persona-eyebrow').textContent='Persona · Plan '+curPlan.toUpperCase();
+  document.getElementById('persona-title').textContent=(curPlan==='a'?'페르소나 A안 — 기존 설정 반영':'페르소나 B안 — 완전 신규');
+  document.getElementById('persona-note').innerHTML=(curPlan==='a'
+    ?'기존 <b>캐릭터_설정.txt</b>의 심리 엔진을 게임 스튜디오 직급으로 이식한 안.'
+    :'동일 직급·구조 위에 성격을 <b>처음부터 새로</b> 잡은 안.')+' 왼쪽에서 한 명씩 확인하세요.';
+  const roster=document.getElementById('roster');
+  curOrder=[];
+  roster.innerHTML=GROUPS.map(g=>{
+    const items=g.ids.filter(id=>data[id]).map(id=>{curOrder.push(id);const p=data[id];const m=PART[p.part];
+      return `<button class="ritem" data-id="${id}"><span class="dot" style="background:${m.c}"></span><span>${p.name}</span><span class="rmbti">${p.mbti}</span></button>`;}).join('');
+    return `<div class="rgroup"><div class="rg-label">${g.label}</div><div class="rlist">${items}</div></div>`;
   }).join('');
-  return `<div class="phase"><span class="pl">${ph.name}</span>${ph.turn?`<span class="turn">${ph.turn}</span>`:''}<span class="ln"></span></div><div class="seq">${steps}</div>`;
- }).join('');
- return `<section class="day"><div class="day-head">
-   <div class="day-num">${d.n}<span class="p">/${d.dow}</span></div>
-   <div class="day-title"><h2>${d.title}</h2><div class="dir">${d.dir}</div></div></div>
-   <div class="day-theme">${d.theme}</div>${phases}</section>`;
-}).join('');
-</script>
-</body>
-</html>
+  if(!curChar||curOrder.indexOf(curChar)<0)curChar=curOrder[0];
+  roster.querySelectorAll('.ritem').forEach(b=>b.addEventListener('click',()=>showChar(b.dataset.id)));
+  showChar(curChar);
+}
+function showChar(id){
+  curChar=id;const data=planData();const sheet=document.getElementById('sheet');
+  sheet.innerHTML=renderSheet(data[id]);
+  document.querySelectorAll('#roster .ritem').forEach(b=>b.setAttribute('aria-current',b.dataset.id===id?'true':'false'));
+  const i=curOrder.indexOf(id);
+  const pager=document.createElement('div');pager.className='pager';
+  pager.innerHTML=`<button ${i<=0?'disabled':''} data-go="${curOrder[i-1]||''}">← 이전</button><button ${i>=curOrder.length-1?'disabled':''} data-go="${curOrder[i+1]||''}">다음 →</button>`;
+  sheet.appendChild(pager);
+  pager.querySelectorAll('button[data-go]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.go)showChar(b.dataset.go);}));
+}
+
+function build30(){
+  document.getElementById('flow-arcband').innerHTML=FLOW_ARCS.map(a=>
+    `<div class="arc ${a.c}"><div class="ak">${a.k}</div><h4>${a.t}</h4><p>${a.d}</p></div>`).join('');
+  document.getElementById('flow-legend').innerHTML=[
+    ['var(--force)','강제 스토리 (필수사건)'],['var(--dev)','육성·상호작용 중심'],
+    ['var(--plan)','필수사건 태그 E1–E9'],['var(--amber)','금요일 정산 (D5·10·15·20·25·30)'],
+    ['var(--force)','절정 (D25 업무 / D30 가치관)']
+  ].map(([c,t])=>`<span class="li"><span class="sw" style="background:${c}"></span>${t}</span>`).join('');
+  document.getElementById('flow-weeks').innerHTML=WEEKS.map(w=>{
+    const climax=w.days.some(d=>d.tags.some(t=>t[1]==='cli'));
+    const days=w.days.map(d=>{
+      const tags=[`<span class="t ${d.dir==='force'?'force':'grow'}">${d.dir==='force'?'강제':'육성'}</span>`]
+        .concat(d.tags.map(([txt,k])=>`<span class="t ${k}">${txt}</span>`)).join('');
+      return `<div class="day"><div class="dn"><span class="num">Day ${d.n}</span><span class="dow">${d.dow}</span></div>
+        <h5>${d.title}</h5><p class="desc">${d.desc}</p><div class="tags">${tags}</div></div>`;
+    }).join('');
+    return `<div class="week"><div class="week-h">
+      <span class="wtag">${w.w}</span><span class="wtitle">${w.title}</span><span class="wact">${w.act}</span>
+      <span class="wmeta"><span class="chip jam">${w.jam}</span>
+        <span class="chip settle">${w.settle}</span>
+        ${climax?'<span class="chip climax">절정</span>':''}</span>
+      </div><div class="days">${days}</div></div>`;
+  }).join('');
+  document.getElementById('flow-loop').innerHTML=LOOP.map((n,i)=>
+    `<span class="node ${n[1]}">${n[0]}</span>${i<LOOP.length-1?'<span class="arrow">›</span>':''}`).join('');
+  document.getElementById('flow-chain').innerHTML=CHAIN.map(([ix,txt,part])=>{
+    const m=PART[part];
+    return `<div class="step"><span class="ix">${ix}</span>
+      <div class="bd"><b>${txt}</b><div class="who" style="color:${m.c}">▸ ${m.label} 파트</div></div></div>`;
+  }).join('');
+  document.getElementById('flow-ends').innerHTML=FLOW_ENDS.map(([cls,t,cond,res])=>
+    `<div class="end ${cls}"><div class="et">${t}</div><div class="cond">${cond}</div><div class="res">${res}</div></div>`).join('');
+}
+
+function renderStory(){
+  const d=PLAN[curPlan];
+  document.getElementById('story-arcband').innerHTML=STORY_ARCS.map(a=>
+    `<div class="arc ${a[0]}"><div class="ak">${a[1]}</div><h4>${a[2]}</h4><p>${a[3]}</p></div>`).join('');
+  document.getElementById('story-logline').innerHTML=LOGLINE;
+  document.getElementById('story-planname').textContent='STORYLINE · PLAN '+curPlan.toUpperCase();
+  document.getElementById('story-plantitle').textContent=(curPlan==='a'?'A안':'B안')+' — '+d.title;
+  document.getElementById('story-planlabel').textContent=d.label;
+  document.getElementById('story-cast').innerHTML=d.cast.map(c=>
+    `<span class="cc"><span class="dot" style="background:${PART[c[2]].c}"></span><b>${c[0]}</b><span>${c[1]}</span></span>`).join('');
+  document.getElementById('story-syn').innerHTML=d.syn.map(p=>`<p>${p}</p>`).join('');
+  const idx=curPlan==='a'?5:6;
+  document.getElementById('story-timeline').innerHTML=BEATS.map(b=>{
+    const ev=b[1]?`<span class="evtag">${b[1]}</span>`:'';
+    return `<div class="beat p-${b[3]}"><div class="beat-card">
+      <div class="beat-head"><span class="daytag">${b[0]}</span>${ev}<h3>${b[2]}</h3></div>
+      <div class="fixed"><span class="fl">Fixed · 공유 뼈대</span>${b[4]}</div>
+      <div class="narr"><span class="nl">${d.label} 전개</span>${b[idx]}</div>
+    </div></div>`;
+  }).join('');
+  document.getElementById('story-ends').innerHTML=STORY_ENDS.map(e=>
+    `<div class="end ${e[0]}"><div class="et">${e[1]}</div><div class="cond">${e[2]}</div><div class="res">${e[3]}</div></div>`).join('');
+  document.getElementById('story-endnote').innerHTML=d.endNote+' <span style="color:var(--ink-3)">특별분기(경쟁사·연대·후계)는 정규 3종 확정 이후 후순위.</span>';
+}
+
+/* ===== controller ===== */
+const TABS={persona:'pane-persona',story:'pane-story',flow:'pane-flow'};
+function selectTab(name){
+  Object.keys(TABS).forEach(k=>{
+    document.getElementById(TABS[k]).classList.toggle('on',k===name);
+    document.getElementById('t-'+k).setAttribute('aria-selected',k===name);
+  });
+  document.getElementById('planseg').style.display=(name==='flow')?'none':'';
+  window.scrollTo({top:0});
+}
+function selectPlan(p){
+  curPlan=p;
+  document.getElementById('root').className='wrap plan-'+p;
+  document.getElementById('planseg').className='seg plan-'+p;
+  document.getElementById('p-a').setAttribute('aria-pressed',p==='a');
+  document.getElementById('p-b').setAttribute('aria-pressed',p==='b');
+  buildPersona(); renderStory();
+}
+document.getElementById('t-persona').addEventListener('click',()=>selectTab('persona'));
+document.getElementById('t-story').addEventListener('click',()=>selectTab('story'));
+document.getElementById('t-flow').addEventListener('click',()=>selectTab('flow'));
+document.getElementById('p-a').addEventListener('click',()=>selectPlan('a'));
+document.getElementById('p-b').addEventListener('click',()=>selectPlan('b'));
+
+build30();
+selectPlan('a');
+selectTab('persona');
+
+</script></body></html>
