@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>브라이트 스튜디오 — 캐릭터 페르소나 & 관계도</title>
+<title>브라이트 스튜디오 — 캐릭터 페르소나 & 엔딩 조건</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -157,26 +157,6 @@
   body.mode-a .tone-a{display:block;}
   body.mode-b .tone-b{display:block;}
 
-  /* ---- relationship map ---- */
-  .mapwrap{border:2px solid var(--line-hard);background:var(--card);padding:6px;}
-  svg.map{display:block;width:100%;height:auto;}
-  .map .node rect{fill:var(--card);stroke:var(--line-hard);stroke-width:2;}
-  .map .node.exec rect{fill:var(--wash);}
-  .map .node.boss rect{fill:var(--accent);}
-  .map .node.boss text{fill:#fff;}
-  .map .node.ext rect{stroke-dasharray:4 3;}
-  .map .node text{font-family:var(--font-body);font-weight:600;font-size:14px;fill:var(--ink);}
-  .map .node .r{font-family:var(--font-mono);font-size:9.5px;fill:var(--ink-soft);}
-  .map .node.boss .r{fill:#e9eef2;}
-  .map .edge{stroke:var(--ink-soft);stroke-width:1.6;fill:none;}
-  .map .edge.strong{stroke:var(--accent);stroke-width:2.4;}
-  .map .edge.secret{stroke:var(--accent-2);stroke-width:2;stroke-dasharray:6 4;}
-  .map .elabel{font-family:var(--font-mono);font-size:10px;fill:var(--ink);}
-  .map .elabel .bg{fill:var(--paper);}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
-  .legend span{display:inline-flex;align-items:center;gap:7px;}
-  .legend i{width:22px;height:0;border-top-width:2.4px;border-top-style:solid;display:inline-block;}
-
   footer{margin-top:60px;padding-top:18px;border-top:2px solid var(--line-hard);
     font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
@@ -272,7 +252,7 @@
 <body class="mode-a">
 
 <div class="topbar">
-  <div class="brandmark"><b>BRIGHT STUDIO</b> · 인사기록 도시에 &nbsp;/&nbsp; 캐릭터 페르소나 · 관계도</div>
+  <div class="brandmark"><b>BRIGHT STUDIO</b> · 인사기록 도시에 &nbsp;/&nbsp; 캐릭터 페르소나 · 엔딩 조건</div>
   <div class="tabs" role="tablist" aria-label="톤 방향성 전환">
     <button class="tab" id="tab-a" role="tab" aria-selected="true" onclick="setMode('a')">A · 리얼리즘</button>
     <button class="tab" id="tab-b" role="tab" aria-selected="false" onclick="setMode('b')">B · 블랙코미디</button>
@@ -293,7 +273,7 @@
       <b>[브라이트 스튜디오]</b>. 오인한 채 면접을 봤는데 어쩌다 <b>인턴 계약 성공 → 6주 인턴</b>이 된다.
       창립 멤버 경영진 3명이 팀장 3명을 스카웃했지만 <b>정작 팀원은 없다.</b> 그 회사에 기획·개발·아트를 전부
       해내는 <b>만능 잡부</b> 하나가 굴러들어온 셈. — 아래는 톤 두 방향(A/B)을 상단 탭으로 비교하는 캐릭터 문서다.
-      페르소나·관계도에 더해, 이번 판에는 <b>06 엔딩 조건</b>(평판으로 갈리는 3종 판정)을 함께 담았다.
+      페르소나에 더해, 이번 판에는 <b>05 엔딩 조건</b>(평판 × 기여도로 갈리는 판정)을 함께 담았다.
     </p>
     <div class="moodline"></div>
   </header>
@@ -584,68 +564,14 @@
     </div>
   </section>
 
-  <!-- 관계도 -->
-  <section class="sec">
-    <div class="sec-h"><span class="no">05</span><h2>관계도</h2><span class="tag">탭 전환 시 색상 연동</span></div>
-    <div class="mapwrap">
-      <svg class="map" viewBox="0 0 1000 660" role="img" aria-label="캐릭터 관계도">
-        <!-- edges -->
-        <path class="edge strong" d="M500 108 L300 168"/>
-        <path class="edge strong" d="M500 108 L700 168"/>
-        <path class="edge secret" d="M540 120 Q720 300 760 452"/>
-        <path class="edge strong" d="M500 128 L500 560"/>
-        <path class="edge" d="M290 205 L250 322"/>
-        <path class="edge secret" d="M700 205 Q640 340 560 470"/>
-        <path class="edge" d="M715 200 Q640 400 540 580"/>
-        <path class="edge" d="M250 362 L455 362"/>
-        <path class="edge" d="M545 362 L750 362"/>
-        <path class="edge" d="M250 400 Q360 500 445 585"/>
-        <path class="edge" d="M500 402 L500 560"/>
-        <path class="edge" d="M760 402 Q660 500 560 585"/>
-        <path class="edge strong" d="M560 600 L720 495"/>
-        <path class="edge secret" d="M440 610 L200 585"/>
-
-        <!-- edge labels -->
-        <g class="elabel"><rect class="bg" x="356" y="128" width="90" height="15"/><text x="360" y="140">대학원 선후배</text></g>
-        <g class="elabel"><rect class="bg" x="588" y="128" width="98" height="15"/><text x="592" y="140">최장 동행·충돌</text></g>
-        <g class="elabel"><rect class="bg" x="648" y="290" width="66" height="15"/><text x="652" y="302">숨겨진 부녀</text></g>
-        <g class="elabel"><rect class="bg" x="512" y="250" width="66" height="15"/><text x="516" y="262">기대·후원</text></g>
-        <g class="elabel"><rect class="bg" x="196" y="255" width="90" height="15"/><text x="200" y="267">전략 vs 실행</text></g>
-        <g class="elabel"><rect class="bg" x="300" y="356" width="82" height="15"/><text x="304" y="368">스펙 vs 구현</text></g>
-        <g class="elabel"><rect class="bg" x="596" y="356" width="82" height="15"/><text x="600" y="368">냉소 vs 케어</text></g>
-        <g class="elabel"><rect class="bg" x="596" y="245" width="82" height="15"/><text x="600" y="257">신분 아는 자</text></g>
-        <g class="elabel"><rect class="bg" x="270" y="486" width="78" height="15"/><text x="274" y="498">무한 리테이크</text></g>
-        <g class="elabel"><rect class="bg" x="616" y="536" width="66" height="15"/><text x="620" y="548">사수–조력</text></g>
-        <g class="elabel"><rect class="bg" x="250" y="580" width="78" height="15"/><text x="254" y="592">사외 정서 축</text></g>
-
-        <!-- nodes -->
-        <g class="node boss" transform="translate(430,78)"><rect width="140" height="52" rx="2"/><text x="70" y="26" text-anchor="middle">박정환</text><text class="r" x="70" y="42" text-anchor="middle">대표이사 · ENFP</text></g>
-        <g class="node exec" transform="translate(200,170)"><rect width="132" height="50" rx="2"/><text x="66" y="24" text-anchor="middle">서동혁</text><text class="r" x="66" y="40" text-anchor="middle">이사 · ENTJ</text></g>
-        <g class="node exec" transform="translate(668,170)"><rect width="150" height="50" rx="2"/><text x="75" y="24" text-anchor="middle">윤경희</text><text class="r" x="75" y="40" text-anchor="middle">경영지원팀장 · ISTJ</text></g>
-
-        <g class="node" transform="translate(184,330)"><rect width="132" height="50" rx="2"/><text x="66" y="24" text-anchor="middle">강우진</text><text class="r" x="66" y="40" text-anchor="middle">기획팀장 · INTJ</text></g>
-        <g class="node" transform="translate(434,330)"><rect width="132" height="50" rx="2"/><text x="66" y="24" text-anchor="middle">김세호</text><text class="r" x="66" y="40" text-anchor="middle">개발팀장 · INTP</text></g>
-        <g class="node" transform="translate(684,330)"><rect width="132" height="50" rx="2"/><text x="66" y="24" text-anchor="middle">문지영</text><text class="r" x="66" y="40" text-anchor="middle">아트팀장 · ESFJ</text></g>
-
-        <g class="node boss" transform="translate(426,562)"><rect width="148" height="52" rx="2"/><text x="74" y="26" text-anchor="middle">주인공</text><text class="r" x="74" y="42" text-anchor="middle">만능 잡부 · 인턴</text></g>
-        <g class="node" transform="translate(688,452)"><rect width="140" height="50" rx="2"/><text x="70" y="24" text-anchor="middle">정하윤</text><text class="r" x="70" y="40" text-anchor="middle">후임 · INFJ</text></g>
-        <g class="node ext" transform="translate(60,556)"><rect width="140" height="50" rx="2"/><text x="70" y="24" text-anchor="middle">어머니</text><text class="r" x="70" y="40" text-anchor="middle">사외 · ISFJ</text></g>
-      </svg>
-    </div>
-    <div class="legend">
-      <span><i style="border-top-color:var(--accent);"></i> 핵심 관계</span>
-      <span><i style="border-top-color:var(--ink-soft);"></i> 일반 관계</span>
-      <span><i style="border-top-color:var(--accent-2);border-top-style:dashed;"></i> 은폐·사외</span>
-    </div>
-  </section>
-
   <!-- 06 엔딩 조건 -->
-  <section class="sec" id="sec06">
-    <div class="sec-h"><span class="no">06</span><h2>엔딩 조건</h2><span class="tag">평판 → 3종 판정</span></div>
+  <section class="sec" id="sec05">
+    <div class="sec-h"><span class="no">05</span><h2>엔딩 조건</h2><span class="tag">평판 × 기여도</span></div>
     <p class="end-intro">
-      6주가 끝나면 <b>경영진 3인</b>과 <b>파트 팀장 3인</b>의 평판으로 계약이 갈린다.
-      <b>정직원 게이트</b>는 경영진 평균 <b>中 이상</b> — 그 위에서 <b>Good</b>만 상향 조건으로 분기한다.
-      아래 계산기로 슬라이더를 움직여 판정을 즉시 확인하고, 오른쪽 플로우로 규칙을 따라가 보라.
+      6주가 끝나면 두 축으로 계약이 갈린다. <b>평판</b>(경영진 3 + 팀장 3)은 <b>tier</b>를 정하고 —
+      정직원 게이트는 경영진 평균 <b>中 이상</b>, 그 위에서 <b>Good</b>만 상향 분기 — <b>기여도</b>(실제 프로젝트 생산)는
+      그 위에 얹혀 <b>Bad를 Normal로 구제</b>하거나 엔딩의 <b>부제 flavor</b>를 바꾼다.
+      아래 계산기로 슬라이더를 움직여 판정과 부제를 즉시 확인하고, 오른쪽 플로우로 게이트를 따라가 보라.
     </p>
 
     <div class="end-grid">
@@ -688,11 +614,18 @@
           <div class="num" id="n-at">52</div><div class="g-chip" id="g-at">中</div>
         </div>
 
+        <div class="grp-h">프로젝트 기여도 · Bad 구제 + 부제 flavor</div>
+        <div class="rep-row">
+          <div class="who">기여도<i>라인 생산 업무량 · 이해도</i></div>
+          <input type="range" min="0" max="100" value="50" id="r-cn">
+          <div class="num" id="n-cn">50</div><div class="g-chip" id="g-cn">中</div>
+        </div>
+
         <div class="verdict" id="verdict"><!-- JS 렌더 --></div>
 
         <small class="note">
-          동점 팀은 플레이어 기여량(라인 생산 업무량) 우선 — 계산기엔 기여량 데이터가 없어 <b>기획 &gt; 개발 &gt; 아트</b> 고정 순으로 대체.
-          배치 팀은 정직원 직무로 확정된다.
+          동점 팀은 플레이어 기여량(라인 생산 업무량) 우선 — 계산기엔 라인별 데이터가 없어 <b>기획 &gt; 개발 &gt; 아트</b> 고정 순으로 대체.
+          배치 팀은 정직원 직무로 확정. <b>기여도 上</b>은 Bad를 Normal로 한 단계 구제하고, 나머지는 부제 flavor만 바꾼다.
         </small>
       </div>
 
@@ -740,12 +673,47 @@
           </svg>
         </div>
         <p class="flow-note">
-          <b>게이트:</b> 경영진 평균 中 이상이면 최소 Normal 보장(경영진 上·파트 上&lt;2 도 Normal로 흡수).
+          <b>평판 게이트(위 플로우):</b> 경영진 평균 中 이상이면 최소 Normal 보장(경영진 上·파트 上&lt;2 도 Normal로 흡수).
           경영진 中 + 파트 전원 下 도 정직원 유지, 상대적 최고 평판 팀에 배치.<br>
-          <b>임계값:</b> 上 ≥ 70 · 中 40–69 · 下 &lt; 40 &nbsp;/&nbsp; <b>배치:</b> 파트 최고 평판 팀 = 정직원 직무 확정.
+          <b>임계값:</b> 上 ≥ 70 · 中 40–69 · 下 &lt; 40 &nbsp;/&nbsp; <b>배치:</b> 파트 최고 평판 팀 = 정직원 직무 확정.<br>
+          <b>기여도 modulation:</b> 게이트가 tier를 정한 뒤 기여도가 얹힌다 — 아래 매트릭스 참조.
         </p>
       </div>
     </div>
+
+    <!-- 평판 × 기여도 flavor 매트릭스 -->
+    <div class="lever" style="margin-top:26px;">
+      <table>
+        <thead><tr>
+          <th>평판 tier ＼ 기여도</th>
+          <th>下 · 땡땡이</th><th>中 · 보통</th><th>上 · 일벌레</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="nm" style="color:var(--accent);">GOOD<br><span style="color:var(--ink-soft);font-family:var(--font-mono);font-size:10px;">경영진 上·파트 上2↑</span></td>
+            <td><b style="color:var(--accent);">GOOD</b> · 사내정치 만렙, 실무 0</td>
+            <td><b style="color:var(--accent);">GOOD</b> · 기본</td>
+            <td><b style="color:var(--accent);">GOOD</b> · 실적·인맥 둘 다 흑자</td>
+          </tr>
+          <tr>
+            <td class="nm">NORMAL<br><span style="color:var(--ink-soft);font-family:var(--font-mono);font-size:10px;">게이트 통과</span></td>
+            <td><b>NORMAL</b> · 무임승차 완전범죄</td>
+            <td><b>NORMAL</b> · 기본</td>
+            <td><b>NORMAL</b> · 일 최상위·회식 최하위</td>
+          </tr>
+          <tr>
+            <td class="nm" style="color:var(--accent-2);">BAD<br><span style="color:var(--ink-soft);font-family:var(--font-mono);font-size:10px;">경영진 下</span></td>
+            <td class="down">BAD · “당신은… 아닙니다”</td>
+            <td class="down">BAD · 기본</td>
+            <td><b>NORMAL ⤴</b> · 미움받아도 결과물이 살림 <span style="color:var(--ink-soft);font-family:var(--font-mono);font-size:10px;">(구제)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="flow-note" style="margin-top:10px;">
+      부제의 A/B 톤 문안은 계산기의 판정 카드에서 실시간으로 확인 — 슬라이더를 움직이면 tier·부제가 함께 바뀐다.
+      유일한 tier 변동은 <b>Bad + 기여도 上 → Normal(구제)</b> 하나뿐.
+    </p>
 
     <!-- 평판 레버 -->
     <div class="lever">
@@ -774,8 +742,8 @@
   </section>
 
   <footer>
-    <span>BRIGHT STUDIO · 캐릭터 페르소나 & 관계도</span>
-    <span>범위: 페르소나 + 관계도 + 06 엔딩 조건 / 다음: 기본 스토리 · 07 특별 분기</span>
+    <span>BRIGHT STUDIO · 캐릭터 페르소나 & 엔딩 조건</span>
+    <span>범위: 페르소나 + 05 엔딩 조건(평판 × 기여도) / 다음: 기본 스토리 · 06 특별 분기</span>
   </footer>
 
 </div>
@@ -789,7 +757,7 @@
     if(window.__renderVerdict) window.__renderVerdict();
   }
 
-  /* ===== 06 평판 계산기 ===== */
+  /* ===== 05 평판 계산기 ===== */
   (function(){
     var grade = function(v){ return v>=70?'上':(v>=40?'中':'下'); };
     var execIds = ['pj','sd','yk'];
@@ -822,6 +790,23 @@
     var CLS = {GOOD:'vd-good', NORMAL:'vd-normal', BAD:'vd-bad'};
     var BADGE = {GOOD:'GOOD', NORMAL:'NORMAL', BAD:'BAD'};
 
+    // flavor 부제 (평판 × 기여도 조합). A: 리얼리즘(건조·아이러니) / B: 블랙코미디(과장).
+    var FLAVOR = {
+      POLITICS:{a:'사내정치 만렙 · 실무 경험치 0', b:'일은 안 했는데 다들 좋아함 (이게 진짜 재능)'},
+      CLEAN:   {a:'실적도 인맥도 흑자 · 흠잡을 데 없음', b:'재수 없게 완벽함 (동료들 조용히 손절 중)'},
+      SNEAKY:  {a:'무임승차 적발 0건 · 완전범죄', b:'일 안 한 거 어떻게 아무도 모르지? (아직은요)'},
+      MERIT:   {a:'일은 최상위, 회식 참석은 최하위', b:'실적왕인데 이름은 아무도 못 외움'},
+      RESCUE:  {a:'미움받았지만, 결과물은 차마 못 버림', b:'다들 싫어하는데 프로젝트가 당신 손으로 굴러가서 해고 각하'},
+      TRAGIC:  {a:'브라이트가 찾던 사람은… 당신이 아니었다', b:'정든 만큼만 짐 싸세요 (근데 딱히 안 정들었어요)'}
+    };
+
+    // 평판 tier(repEnd) × 기여도등급(cg) → [최종 tier, flavor코드]
+    function resolve(repEnd, cg){
+      if(repEnd==='GOOD')   return (cg==='下')?['GOOD','POLITICS']:(cg==='上')?['GOOD','CLEAN']:['GOOD','BASE'];
+      if(repEnd==='NORMAL') return (cg==='下')?['NORMAL','SNEAKY']:(cg==='上')?['NORMAL','MERIT']:['NORMAL','BASE'];
+      /* BAD */              return (cg==='上')?['NORMAL','RESCUE']:(cg==='下')?['BAD','TRAGIC']:['BAD','BASE'];
+    }
+
     function setChip(id, g){
       var el = document.getElementById('g-'+id);
       el.textContent = g;
@@ -848,33 +833,46 @@
       });
       var 상count = partData.filter(function(p){return p.g==='上';}).length;
 
+      // 기여도
+      var cnV = +document.getElementById('r-cn').value;
+      document.getElementById('n-cn').textContent = cnV;
+      var cg = grade(cnV);
+      setChip('cn', cg);
+
       // 최고 평판 팀 (동점 → order 낮은 순: 기획>개발>아트)
       var best = partData.slice().sort(function(a,b){
         return (b.v-a.v) || (a.order-b.order);
       })[0];
 
-      // 판정 (게이트 우선)
-      var end;
-      if(execG==='下') end='BAD';
-      else if(execG==='上' && 상count>=2) end='GOOD';
-      else end='NORMAL';
+      // 1) 평판 tier (게이트 우선)
+      var repEnd;
+      if(execG==='下') repEnd='BAD';
+      else if(execG==='上' && 상count>=2) repEnd='GOOD';
+      else repEnd='NORMAL';
+
+      // 2) 기여도로 최종 tier + flavor 결정
+      var r = resolve(repEnd, cg), end = r[0], flavor = r[1];
+      var rescued = (repEnd==='BAD' && end==='NORMAL');
 
       // 톤
       var mode = document.body.classList.contains('mode-b') ? 'b' : 'a';
       var teamLabel = best.key+'('+best.lead+')';
       var copy = COPY[end][mode].replace(/\{팀\}/g, best.key);
+      var sub = (flavor==='BASE') ? TITLE[end].s : FLAVOR[flavor][mode];
 
       var metersHtml =
-        '경영진 평균 <b>'+execAvg.toFixed(1)+'</b> · 등급 <b>'+execG+'</b>'+
+        '경영진 평균 <b>'+execAvg.toFixed(1)+'</b> · <b>'+execG+'</b>'+
         ' &nbsp;|&nbsp; 파트 上 <b>'+상count+'</b>/3'+
-        (end==='BAD' ? '' : ' &nbsp;|&nbsp; 배치 <b>'+teamLabel+'</b>');
+        ' &nbsp;|&nbsp; 기여도 <b>'+cg+'</b>'+
+        (end==='BAD' ? '' : ' &nbsp;|&nbsp; 배치 <b>'+teamLabel+'</b>')+
+        (rescued ? ' &nbsp;|&nbsp; <b>Bad→Normal 구제</b>' : '');
 
       document.getElementById('verdict').innerHTML =
         '<div class="'+CLS[end]+'">'+
           '<div class="vd-meters">'+metersHtml+'</div>'+
           '<div class="vd-stamp">'+
             '<span class="vd-badge">'+BADGE[end]+'</span>'+
-            '<span class="vd-title">'+TITLE[end].t+'<i>'+TITLE[end].s+'</i></span>'+
+            '<span class="vd-title">'+TITLE[end].t+'<i>'+sub+'</i></span>'+
           '</div>'+
           '<div class="vd-copy">'+copy+'</div>'+
         '</div>';
